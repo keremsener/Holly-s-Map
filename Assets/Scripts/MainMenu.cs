@@ -1,12 +1,12 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-using UnityEngine.Audio; // Mikseri kullanmak için bu kütüphane şart
+using UnityEngine.Audio; // Mikser library
 
 public class MainMenu : MonoBehaviour
 {
     [Header("UI Objeleri")]
-    public GameObject buttonContainer; // Ana butonların içinde olduğu klasör obje
+    public GameObject buttonContainer;
     public GameObject settingsPanel; 
 
     [Header("Butonlar")]
@@ -16,22 +16,19 @@ public class MainMenu : MonoBehaviour
     public Button closeSettingsButton; 
 
     [Header("Ses Ayarları")]
-    public AudioMixer mainMixer; // Yarattığımız ses mikseri
-    public Slider volumeSlider;  // Ses çubuğu
+    public AudioMixer mainMixer;
+    public Slider volumeSlider;
 
     void Start()
     {
-        // Başlangıçta paneli gizle, ana butonları göster
         if (settingsPanel != null) settingsPanel.SetActive(false);
         if (buttonContainer != null) buttonContainer.SetActive(true);
 
-        // Buton Görevleri
         if (PlayButton != null) PlayButton.onClick.AddListener(PlayGame);
         if (SettingsButton != null) SettingsButton.onClick.AddListener(OpenSettings);
         if (QuitButton != null) QuitButton.onClick.AddListener(QuitGame);
         if (closeSettingsButton != null) closeSettingsButton.onClick.AddListener(CloseSettings);
 
-        // Slider değiştiğinde SetVolume fonksiyonunu çalıştır
         if (volumeSlider != null)
         {
             volumeSlider.onValueChanged.AddListener(SetVolume);
@@ -45,22 +42,18 @@ public class MainMenu : MonoBehaviour
 
     public void OpenSettings()
     {
-        // Ayarlar açılınca butonları gizle, paneli göster
         if (buttonContainer != null) buttonContainer.SetActive(false);
         if (settingsPanel != null) settingsPanel.SetActive(true);
     }
 
     public void CloseSettings()
     {
-        // Ayarlar kapanınca paneli gizle, butonları geri getir
         if (settingsPanel != null) settingsPanel.SetActive(false);
         if (buttonContainer != null) buttonContainer.SetActive(true);
     }
 
-    // Ses seviyesini ayarlayan logaritmik fonksiyon
     public void SetVolume(float volume)
     {
-        // Unity sesleri desibel (dB) olarak alır, 0.0001 - 1 arası değeri dB'ye çeviriyoruz
         if (mainMixer != null)
         {
             mainMixer.SetFloat("MusicVolume", Mathf.Log10(volume) * 20);
