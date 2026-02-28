@@ -139,6 +139,12 @@ public class PlayerCombat : MonoBehaviour
             if (enemyHealth != null)
             {
                 enemyHealth.TakeDamage(meleeDamage);
+                
+                // Camera shake & red flash (Kılıç vuruşu efekti)
+                if (CameraEffects.Instance != null)
+                {
+                    CameraEffects.Instance.MeleeHitEffect();
+                }
             }
 
             // Apply knockback
@@ -213,4 +219,5 @@ public class PlayerCombat : MonoBehaviour
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(meleePoint.position, meleeRange);
     }
+    #endregion
 }

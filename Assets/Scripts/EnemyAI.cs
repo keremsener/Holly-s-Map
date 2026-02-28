@@ -71,6 +71,7 @@ public class EnemyAI : MonoBehaviour
     // Movement
     private bool isFacingRight = true;
     private Vector2 moveDirection = Vector2.zero;
+    private float speedMultiplier = 1f; // Bacak kopunca hız düşürülür
 
     // Animator Hash
     private int hashWalking;
@@ -346,7 +347,9 @@ public class EnemyAI : MonoBehaviour
             FaceTarget(target);
         }
 
-        rb.linearVelocity = new Vector2(moveDirection.x * speed, rb.linearVelocity.y);
+        // Bacak kopunca hız düşsün
+        float finalSpeed = speed * speedMultiplier;
+        rb.linearVelocity = new Vector2(moveDirection.x * finalSpeed, rb.linearVelocity.y);
     }
 
     private void StopMovement()
@@ -463,6 +466,69 @@ public class EnemyAI : MonoBehaviour
     {
         // Animator parametreleri state'de güncellenmiş
     }
+
+    #region Limb Damage Effects
+    /// <summary>
+    /// Bacak kaybı etkileri - hız düşürülür ve sendeleme başlar
+    /// </summary>
+    public void ApplyLimbDamageEffect(float newSpeedMultiplier, bool applyStagger)
+    {
+        speedMultiplier = newSpeedMultiplier;
+        
+        if (applyStagger)
+        {
+            StartCoroutine(StaggerMovement());
+        }
+        
+        Debug.Log($"🦵 {gameObject.name} bacak kaybı efekti: Hız {newSpeedMultiplier}x oldu!");
+    }
+
+    /// <summary>
+    /// Kol kopunca saldırı devre dışı bırak
+    /// </summary>
+    public void DisableAttacks()
+    {
+        // Saldırıyı blokla
+        isAttacking = true;
+        StopAllCoroutines(); // Devam eden ExecuteAttack'i durdur
+        
+        // Kalıcı olarak disabled tut
+        StartCoroutine(KeepAttacksDisabled());
+    }
+
+    /// <summary>
+    /// Bacaklar kopunca sendeleme animasyonu
+    /// </summary>
+    private IEnumerator StaggerMovement()
+    {
+        Debug.Log($"🤪 {gameObject.name} sendeliyor!");
+        
+        for (int i = 0; i < 8; i++) // 8 frame sendeleme
+        {
+            if (rb != null && moveDirection.magnitude > 0)
+            {
+                // Random hareket sapması
+                float staggerX = Random.Range(-0.2f, 0.2f);
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x + staggerX, rb.linearVelocity.y);
+            }
+            yield return null;
+        }
+    }
+
+    /// <summary>
+    /// Kollar kopunca saldırıyı kalıcı disable et
+    /// </summary>
+    private IEnumerator KeepAttacksDisabled()
+    {
+        Debug.Log($"🚫 {gameObject.name} saldırılamıyor - kollar yok!");
+        
+        while (true)
+        {
+            isAttacking = true; // Hep attacking durumunda tut saldırı yapmasın
+            yield return new WaitForSeconds(0.1f);
+        }
+    }
+    #endregion
 
     private void InitializeComponents()
     {

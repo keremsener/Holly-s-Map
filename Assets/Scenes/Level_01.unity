@@ -261,6 +261,7 @@ GameObject:
   - component: {fileID: 111196503}
   - component: {fileID: 111196507}
   - component: {fileID: 111196506}
+  - component: {fileID: 111196508}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -403,6 +404,23 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &111196508
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 111196502}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c3f9762578d47b5b88e56cf749e1f80, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraEffects
+  shakeIntensity: 0.01
+  shakeDuration: 0.2
+  vignetteIntensity: 0.8
+  vignetteDuration: 0.35
+  vignettePanel: {fileID: 0}
 --- !u!1 &239674606
 GameObject:
   m_ObjectHideFlags: 0
@@ -5539,6 +5557,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 2946989359822449562, guid: f599d76226aa16e4b87e507fa32dd4b8, type: 3}
+      propertyPath: m_TagString
+      value: Enemy
+      objectReference: {fileID: 0}
     - target: {fileID: 2954680919278256205, guid: f599d76226aa16e4b87e507fa32dd4b8, type: 3}
       propertyPath: m_Layer
       value: 7
@@ -5707,6 +5729,15 @@ MonoBehaviour:
   deathVFXPrefab: {fileID: 0}
   damageSFX: {fileID: 0}
   deathSFX: {fileID: 0}
+  enableLimbDismemberment: 1
+  dismembermentChancePerHit: 1
+  maxLimbsToLose: 4
+  limbLossedSFX: {fileID: 0}
+  manualLimbParts:
+  - {fileID: 1997158015}
+  - {fileID: 746461621}
+  - {fileID: 1609838013}
+  - {fileID: 674564741}
 --- !u!114 &478230440
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5896,6 +5927,16 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &674564741 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6873823480411717103, guid: f599d76226aa16e4b87e507fa32dd4b8, type: 3}
+  m_PrefabInstance: {fileID: 478230430}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &746461621 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5317933018194679475, guid: f599d76226aa16e4b87e507fa32dd4b8, type: 3}
+  m_PrefabInstance: {fileID: 478230430}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &786562099
 GameObject:
   m_ObjectHideFlags: 0
@@ -15724,6 +15765,11 @@ Transform:
   - {fileID: 239674607}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &1609838013 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5830217076046610760, guid: f599d76226aa16e4b87e507fa32dd4b8, type: 3}
+  m_PrefabInstance: {fileID: 478230430}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1618176042
 GameObject:
   m_ObjectHideFlags: 0
@@ -16205,6 +16251,11 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!4 &1997158015 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5267648612279349880, guid: f599d76226aa16e4b87e507fa32dd4b8, type: 3}
+  m_PrefabInstance: {fileID: 478230430}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

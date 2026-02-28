@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.Rendering.Universal;
 
 /// <summary>
 /// Professional Magic Projectile System with damage, knockback, and VFX
@@ -22,14 +23,33 @@ public class MagicBullet : MonoBehaviour
     private Rigidbody2D rb;
     private AudioSource audioSource;
     private bool hasHit = false;
+    private Light2D magicLight; // Mor ışık efekti
+    private float lightIntensity = 0f;
 
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         audioSource = GetComponent<AudioSource>();
+        magicLight = GetComponent<Light2D>();
+
+        // Light yoksa oluştur
+        if (magicLight == null)
+        {
+            magicLight = gameObject.AddComponent<Light2D>();
+        }
+
+        // Light ayarları
+        magicLight.color = new Color(1f, 0f, 1f); // Mor
+        magicLight.intensity = 0f; // Başta kapalı
+        magicLight.pointLightInnerRadius = 0.5f;
+        magicLight.pointLightOuterRadius = 3f;
 
         if (rb != null)
         {
+            // ÖNEMLI: Hızlı mermiler için Collision Detection ayarla
+            rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+            rb.gravityScale = 0f; // Yerçekimine direnç
+            rb.constraints = RigidbodyConstraints2D.FreezeRotation; // Dönüş engelle
             rb.linearVelocity = transform.right * speed;
         }
 
@@ -37,12 +57,22 @@ public class MagicBullet : MonoBehaviour
         Destroy(gameObject, lifetime);
     }
 
+    private void Update()
+    {
+        // Light fade out (çarpışma sonrası)
+        if (hasHit && magicLight != null)
+        {
+            lightIntensity -= Time.deltaTime * 3f; // Hızlı fade
+            magicLight.intensity = Mathf.Max(0f, lightIntensity);
+        }
+    }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (hasHit) return;
 
-        // Check if hit an enemy
-        if (collision.CompareTag("Enemy"))
+        // Düşman mı kontrol et
+        if (collision.CompareTag("Enemy") || collision.GetComponent<IHealth>() != null)
         {
             OnEnemyHit(collision);
         }
@@ -53,6 +83,16 @@ public class MagicBullet : MonoBehaviour
         hasHit = true;
         Debug.Log($"💥 Büyü {enemyCollider.gameObject.name} ile çarpıştı!");
 
+        // Düşmanın konumuna ışık yerleştir
+        transform.position = enemyCollider.transform.position;
+
+        // Mor ışık patlaması
+        if (magicLight != null)
+        {
+            lightIntensity = 2f; // Başlangıç yoğunluğu (parlak)
+            magicLight.intensity = lightIntensity;
+        }
+
         // Deal damage
         var enemyHealth = enemyCollider.GetComponent<IHealth>();
         if (enemyHealth != null)
@@ -60,6 +100,8 @@ public class MagicBullet : MonoBehaviour
             // Calculate knockback direction
             Vector2 knockbackDirection = (enemyCollider.transform.position - transform.position).normalized;
             enemyHealth.TakeDamage(damage);
+            
+            // Ekran vignette yapmıyoruz - düşmanın etrafında zaten mor ışık var
             
             // Apply knockback
             var rb = enemyCollider.GetComponent<Rigidbody2D>();
@@ -82,10 +124,7 @@ public class MagicBullet : MonoBehaviour
             audioSource.PlayOneShot(hitSFX);
         }
 
-        // Destroy projectile
-        if (destroyOnHit)
-        {
-            Destroy(gameObject, 0.1f);
-        }
+        // Destroy projectile after light fades
+        Destroy(gameObject, 0.5f);
     }
 }
