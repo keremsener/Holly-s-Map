@@ -1,110 +1,216 @@
 using UnityEngine;
-using System.Collections; // Bunu eklemeyi unutma!
+using System.Collections;
 
+/// <summary>
+/// Professional Player Combat System
+/// Handles melee attacks, magic spells, cooldowns, and damage application
+/// </summary>
 public class PlayerCombat : MonoBehaviour
 {
-    private Animator anim;
-    
-    [Header("Özel Büyü (F Tuşu - Sınırlı)")]
-    public Transform firePoint;
-    public GameObject magicPrefab;
-    public int maxMagicCharges = 3; // 3 Hak
+    #region Serialized Fields
+    [Header("═══ MELEE ATTACK (Left Click) ═══")]
+    [SerializeField] private Transform meleePoint;
+    [SerializeField] private float meleeRange = 1.5f;
+    [SerializeField] private float meleeDamage = 40f;
+    [SerializeField] private float meleeKnockback = 10f;
+    [SerializeField] private float meleeCooldown = 0.8f;
+    [SerializeField] private LayerMask enemyLayers;
+
+    [Header("═══ MAGIC ATTACK (F Key) ═══")]
+    [SerializeField] private Transform firePoint;
+    [SerializeField] private GameObject magicPrefab;
+    [SerializeField] private int maxMagicCharges = 3;
+    [SerializeField] private float manaRechargeTime = 5f;
+
+    [Header("═══ VFX ═══")]
+    [SerializeField] private GameObject slashVFXPrefab;
+    [SerializeField] private GameObject bloodBurstPrefab;
+    [SerializeField] private GameObject impactVFXPrefab;
+
+    [Header("═══ SFX ═══")]
+    [SerializeField] private AudioClip slashSFX;
+    [SerializeField] private AudioClip magicSFX;
+    [SerializeField] private AudioClip hitSFX;
+    #endregion
+
+    #region Private Variables
+    private Animator animator;
+    private AudioSource audioSource;
     private int currentMagicCharges;
-    public float manaRechargeTime = 5f; // 5 saniyede 1 dolacak
     private bool isRecharging = false;
-
-    [Header("Ana Kılıç (Sol Tık - Sınırsız)")]
-    public Transform meleePoint; // Kılıç vuruş merkezi
-    public float meleeRange = 1.2f; // Vuruş menzili
-    public int meleeDamage = 40; // Kılıç gücü
-    public LayerMask enemyLayers; // Kime vuracağız? (Enemy katmanı)
+    private float lastMeleeTime = -1f;
+    private Camera mainCamera;
     
-    [Header("Savaş Efektleri (Jilet Hissiyat)")]
-    public GameObject slashVFXPrefab; // Havada çıkacak kılıç izi
-    public GameObject bloodBurstPrefab; // Düşmana çarpınca çıkacak kan patlaması
+    private int hashAttackTrigger;
+    #endregion
 
-    void Start()
+    #region Lifecycle
+    private void Awake()
     {
-        anim = GetComponent<Animator>();
-        currentMagicCharges = maxMagicCharges; // Oyuna ful manayla başla
+        animator = GetComponent<Animator>();
+        audioSource = GetComponent<AudioSource>();
+        mainCamera = Camera.main;
+
+        // Cache animator parameter hashes
+        hashAttackTrigger = Animator.StringToHash("Attack");
     }
 
-    void Update()
+    private void Start()
     {
-        // --- MANA YENİLENME SİSTEMİ ---
+        currentMagicCharges = maxMagicCharges;
+        ValidateReferences();
+    }
+
+    private void Update()
+    {
+        HandleMeleeInput();
+        HandleMagicInput();
+        HandleManaRecharge();
+    }
+    #endregion
+
+    #region Input Handling
+    private void HandleMeleeInput()
+    {
+        if (Input.GetKeyDown(KeyCode.Mouse0))
+        {
+            // Cooldown check
+            if (Time.time >= lastMeleeTime + meleeCooldown)
+            {
+                MeleeAttack();
+                lastMeleeTime = Time.time;
+            }
+        }
+    }
+
+    private void HandleMagicInput()
+    {
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            if (currentMagicCharges > 0)
+            {
+                ShootMagic();
+                currentMagicCharges--;
+                Debug.Log($"🔮 Büyü Kullanıldı! Kalan: {currentMagicCharges}/{maxMagicCharges}");
+            }
+            else
+            {
+                Debug.Log("❌ Mana bitti! Yenilenmesini bekle...");
+            }
+        }
+    }
+
+    private void HandleManaRecharge()
+    {
         if (currentMagicCharges < maxMagicCharges && !isRecharging)
         {
             StartCoroutine(RechargeMana());
         }
-
-        // --- KILIÇ / YAKIN DÖVÜŞ (SOL TIK) ---
-        if (Input.GetKeyDown(KeyCode.Mouse0))
-        {
-            MeleeAttack();
-        }
-
-        // --- BÜYÜ FIRLATMA (F TUŞU) ---
-        if (Input.GetKeyDown(KeyCode.F))
-        {
-            if(currentMagicCharges > 0)
-            {
-                anim.SetTrigger("Attack"); // Yine o ıkınma pozu (büyü hazırlığı gibi)
-                ShootMagic();
-                currentMagicCharges--; // Manayı azalt
-            }
-            else
-            {
-                Debug.Log("Mana Bitti! 5 saniye bekle...");
-            }
-        }
     }
+    #endregion
 
-    void MeleeAttack()
+    #region Combat Methods
+    private void MeleeAttack()
     {
-        anim.SetTrigger("Attack"); // Karakter elini uzatsın (kabız pozu)
+        if (animator != null)
+        {
+            animator.SetTrigger(hashAttackTrigger);
+        }
 
-        // 1. Havada Kılıç İzini (Slash VFX) Patlat! (Hile Burası)
-        Instantiate(slashVFXPrefab, meleePoint.position, meleePoint.rotation);
+        // Slash VFX
+        if (slashVFXPrefab != null)
+        {
+            Instantiate(slashVFXPrefab, meleePoint.position, meleePoint.rotation);
+        }
 
-        // 2. Menzildeki düşmanları bul
+        // Slash SFX
+        PlayAudio(slashSFX);
+
+        // Find all enemies in range
         Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(meleePoint.position, meleeRange, enemyLayers);
 
-        // 3. Her düşmana hasar ver ve kan fışkırt
-        // MeleeAttack fonksiyonunun içindeki döngüyü şununla değiştir:
-        foreach(Collider2D enemy in hitEnemies)
+        foreach (Collider2D enemy in hitEnemies)
         {
-            // Savrulma yönünü hesapla (Oyuncudan canavara doğru)
-            Vector2 knockDirection = (enemy.transform.position - transform.position).normalized;
-            
-            // Canavara HASAR ver ve onu İT! (Hasar: 40, İtme Gücü: 10f)
-            enemy.GetComponent<EnemyHealth>().TakeDamage(meleeDamage, knockDirection, 10f);
-        
-            // Kan Efekti (Demin yazdığımız rastgele konumlu kod buraya gelecek)
-            float randomY = Random.Range(0.8f, 1.4f);
-            Vector3 bloodPosition = enemy.transform.position + new Vector3(0, randomY, 0);
-            Instantiate(bloodBurstPrefab, bloodPosition, Quaternion.identity);
+            // Calculate knockback direction
+            Vector2 knockbackDirection = (enemy.transform.position - transform.position).normalized;
+
+            // Deal damage
+            var enemyHealth = enemy.GetComponent<IHealth>();
+            if (enemyHealth != null)
+            {
+                enemyHealth.TakeDamage(meleeDamage);
+            }
+
+            // Apply knockback
+            var rb = enemy.GetComponent<Rigidbody2D>();
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector2.zero;
+                rb.AddForce(knockbackDirection * meleeKnockback, ForceMode2D.Impulse);
+            }
+
+            // Hit SFX
+            PlayAudio(hitSFX);
+
+            // Blood VFX with random height
+            if (bloodBurstPrefab != null)
+            {
+                float randomY = Random.Range(0.8f, 1.4f);
+                Vector3 bloodPosition = enemy.transform.position + new Vector3(0, randomY, 0);
+                Instantiate(bloodBurstPrefab, bloodPosition, Quaternion.identity);
+            }
         }
+
+        Debug.Log($"⚔️ Kılıç Saldırısı! {hitEnemies.Length} düşmana çarptı");
     }
 
-    void ShootMagic()
+    private void ShootMagic()
     {
-        Instantiate(magicPrefab, firePoint.position, firePoint.rotation);
-    }
+        if (animator != null)
+        {
+            animator.SetTrigger(hashAttackTrigger);
+        }
 
-    // Mana Yenileme Sayacı
-    IEnumerator RechargeMana()
+        if (magicPrefab != null)
+        {
+            Instantiate(magicPrefab, firePoint.position, firePoint.rotation);
+        }
+
+        PlayAudio(magicSFX);
+    }
+    #endregion
+
+    #region Cooldown System
+    private IEnumerator RechargeMana()
     {
         isRecharging = true;
         yield return new WaitForSeconds(manaRechargeTime);
         currentMagicCharges++;
-        Debug.Log("1 Mana Yenilendi! Mevcut Mana: " + currentMagicCharges);
+        Debug.Log($"🔄 Mana Yenilendi! {currentMagicCharges}/{maxMagicCharges}");
         isRecharging = false;
     }
+    #endregion
 
-    // Unity'de kılıç menzilini görme hilesi
-    void OnDrawGizmosSelected()
+    #region Utility
+    private void PlayAudio(AudioClip clip)
+    {
+        if (clip != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(clip);
+        }
+    }
+
+    private void ValidateReferences()
+    {
+        if (meleePoint == null) Debug.LogWarning("⚠️ Melee Point not assigned!");
+        if (firePoint == null) Debug.LogWarning("⚠️ Fire Point not assigned!");
+        if (magicPrefab == null) Debug.LogWarning("⚠️ Magic Prefab not assigned!");
+    }
+
+    private void OnDrawGizmosSelected()
     {
         if (meleePoint == null) return;
+        Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(meleePoint.position, meleeRange);
     }
 }

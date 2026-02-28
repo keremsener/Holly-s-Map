@@ -1,31 +1,91 @@
 using UnityEngine;
+using System.Collections;
 
+/// <summary>
+/// Professional Magic Projectile System with damage, knockback, and VFX
+/// </summary>
 public class MagicBullet : MonoBehaviour
 {
-    public float speed = 15f;
-    private Rigidbody2D rb;
+    [Header("═══ MOVEMENT ═══")]
+    [SerializeField] private float speed = 15f;
+    [SerializeField] private float lifetime = 3f;
 
-    void Start()
+    [Header("═══ DAMAGE ═══")]
+    [SerializeField] private float damage = 25f;
+    [SerializeField] private float knockbackForce = 8f;
+
+    [Header("═══ VFX & SFX ═══")]
+    [SerializeField] private GameObject impactVFXPrefab;
+    [SerializeField] private AudioClip hitSFX;
+    [SerializeField] private bool destroyOnHit = true;
+
+    private Rigidbody2D rb;
+    private AudioSource audioSource;
+    private bool hasHit = false;
+
+    private void Start()
     {
-        // Merminin fiziğini (Rigidbody) bul
         rb = GetComponent<Rigidbody2D>();
-        
-        // Doğar doğmaz karakterin baktığı yöne doğru (sağa) uçmaya başla
-        rb.linearVelocity = transform.right * speed;
-        
-        // Mermi boşa giderse haritadan çıkıp oyunu kastırmasın diye 2 saniye sonra kendini sil
-        Destroy(gameObject, 2f); 
+        audioSource = GetComponent<AudioSource>();
+
+        if (rb != null)
+        {
+            rb.linearVelocity = transform.right * speed;
+        }
+
+        // Auto-destroy after lifetime
+        Destroy(gameObject, lifetime);
     }
 
-    // Mermi (Trigger açık olduğu için) bir şeyin içinden geçerken burası çalışır
-    void OnTriggerEnter2D(Collider2D hitInfo)
+    private void OnTriggerEnter2D(Collider2D collision)
     {
-        // Eğer çarptığı şeyin adı "Enemy_Minotaur" ise
-        if(hitInfo.name == "Enemy_Minotaur")
+        if (hasHit) return;
+
+        // Check if hit an enemy
+        if (collision.CompareTag("Enemy"))
         {
-            Debug.Log("Mor büyü Minotaur'a çarptı!");
-            Destroy(hitInfo.gameObject); // Canavarı yok et
-            Destroy(gameObject); // Çarptıktan sonra merminin kendisi de patlayıp yok olsun
+            OnEnemyHit(collision);
+        }
+    }
+
+    private void OnEnemyHit(Collider2D enemyCollider)
+    {
+        hasHit = true;
+        Debug.Log($"💥 Büyü {enemyCollider.gameObject.name} ile çarpıştı!");
+
+        // Deal damage
+        var enemyHealth = enemyCollider.GetComponent<IHealth>();
+        if (enemyHealth != null)
+        {
+            // Calculate knockback direction
+            Vector2 knockbackDirection = (enemyCollider.transform.position - transform.position).normalized;
+            enemyHealth.TakeDamage(damage);
+            
+            // Apply knockback
+            var rb = enemyCollider.GetComponent<Rigidbody2D>();
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector2.zero;
+                rb.AddForce(knockbackDirection * knockbackForce, ForceMode2D.Impulse);
+            }
+        }
+
+        // Play impact VFX
+        if (impactVFXPrefab != null)
+        {
+            Instantiate(impactVFXPrefab, transform.position, Quaternion.identity);
+        }
+
+        // Play impact sound
+        if (hitSFX != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(hitSFX);
+        }
+
+        // Destroy projectile
+        if (destroyOnHit)
+        {
+            Destroy(gameObject, 0.1f);
         }
     }
 }

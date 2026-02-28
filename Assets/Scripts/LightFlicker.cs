@@ -1,24 +1,44 @@
 using UnityEngine;
-using UnityEngine.Rendering.Universal; // URP 2D ışıkları için şart
+using UnityEngine.Rendering.Universal;
 
+/// <summary>
+/// Professional Light Flicker Effect with Perlin Noise for smooth, natural flickering
+/// </summary>
 public class LightFlicker : MonoBehaviour
 {
-    private Light2D _light;
-    public float minIntensity = 1.5f; // En az ne kadar parlasın
-    public float maxIntensity = 2.5f; // En fazla ne kadar parlasın
-    public float flickerSpeed = 0.1f; // Ne kadar hızlı titresin
+    [SerializeField] private float minIntensity = 1.5f;
+    [SerializeField] private float maxIntensity = 2.5f;
+    [SerializeField] private float flickerSpeed = 0.5f;
+    [SerializeField] private bool usePerlinNoise = true;
 
-    void Start()
+    private Light2D lightSource;
+    private float perlinOffset;
+
+    private void Start()
     {
-        _light = GetComponent<Light2D>();
+        lightSource = GetComponent<Light2D>();
+        perlinOffset = Random.Range(0f, 100f);
+
+        if (lightSource == null)
+        {
+            Debug.LogError($"❌ {gameObject.name}: Light2D component not found!");
+        }
     }
 
-    void Update()
+    private void Update()
     {
-        if (_light != null)
+        if (lightSource == null) return;
+
+        if (usePerlinNoise)
         {
-            // Rasgele bir parlaklık değeri atayarak titreme efekti yapıyoruz
-            _light.intensity = Mathf.Lerp(_light.intensity, Random.Range(minIntensity, maxIntensity), flickerSpeed);
+            // Smooth Perlin noise flickering
+            float noiseValue = Mathf.PerlinNoise(Time.time * flickerSpeed, perlinOffset);
+            lightSource.intensity = Mathf.Lerp(minIntensity, maxIntensity, noiseValue);
+        }
+        else
+        {
+            // Random flickering (original method)
+            lightSource.intensity = Mathf.Lerp(lightSource.intensity, Random.Range(minIntensity, maxIntensity), flickerSpeed);
         }
     }
 }
