@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 using System.Collections.Generic;
 
@@ -88,7 +88,12 @@ namespace Spriter2UnityDX {
 		}
 		
 		private void DoForAll (Action<SpriteRenderer> action) {
-			for (var i = 0; i < renderers.Length; i++) action (renderers [i]);
+			for (var i = 0; i < renderers.Length; i++) {
+				if (renderers [i] != null) {
+					try { action (renderers [i]); }
+					catch (MissingReferenceException) { /* renderer yok edilmis, atla */ }
+				}
+			}
 		}
 
 		public void RefreshRenders () {

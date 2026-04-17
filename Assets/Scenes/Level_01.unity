@@ -6895,12 +6895,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   maxHealth: 100
   destroyOnDeath: 1
-  deathDelay: 0.5
   verboseLogs: 0
   damageFlashColor: {r: 1, g: 0, b: 0, a: 1}
   flashDuration: 0.1
-  deathColor: {r: 0.3, g: 0.3, b: 0.3, a: 1}
-  knockbackDecay: 0.95
   damageVFXPrefab: {fileID: 0}
   deathVFXPrefab: {fileID: 0}
   damageSFX: {fileID: 0}
@@ -17161,12 +17158,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   maxHealth: 100
   destroyOnDeath: 1
-  deathDelay: 0.5
   verboseLogs: 0
   damageFlashColor: {r: 1, g: 0, b: 0, a: 1}
   flashDuration: 0.1
-  deathColor: {r: 0.3, g: 0.3, b: 0.3, a: 1}
-  knockbackDecay: 0.95
   damageVFXPrefab: {fileID: 0}
   deathVFXPrefab: {fileID: 0}
   damageSFX: {fileID: 0}
@@ -18358,7 +18352,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 3.5
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -18421,7 +18415,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   walkSpeed: 4
   runSpeed: 8
-  jumpForce: 7
+  jumpForce: 11
   whatIsGround:
     serializedVersion: 2
     m_Bits: 64
@@ -18477,7 +18471,7 @@ MonoBehaviour:
   manaRechargeTime: 5
   slashVFXPrefab: {fileID: 4364062416287365583, guid: fe2205740225ab04bb07d3c6308b7c8b, type: 3}
   bloodBurstPrefab: {fileID: 8782009059513614302, guid: 171dda363e9efd94ca9bc63e38ca9658, type: 3}
-  impactVFXPrefab: {fileID: 0}
+  impactVFXPrefab: {fileID: 3042519775331041172, guid: 841004c4c6a39e244abe2257394de913, type: 3}
   slashSFX: {fileID: 0}
   magicSFX: {fileID: 0}
   hitSFX: {fileID: 0}
@@ -18591,7 +18585,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0.0199, y: -0.3851, z: 10}
-  m_LocalScale: {x: 0.82628226, y: 0.81687164, z: 1}
+  m_LocalScale: {x: 0.99153876, y: 0.92204386, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 111196505}

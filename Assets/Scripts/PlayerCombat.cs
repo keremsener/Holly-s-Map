@@ -42,7 +42,7 @@ public class PlayerCombat : MonoBehaviour
     [Tooltip("Vuruş anında kamera sarsıntısı şiddeti")]
     [SerializeField] private float hitShakeMagnitude = 0.12f;
     [Tooltip("Kan efekti sayısı (her vuruşta)")]
-    [SerializeField] private int bloodParticlesPerHit = 3;
+    [SerializeField] private int bloodParticlesPerHit = 2;
     #endregion
 
     #region Private
@@ -167,12 +167,8 @@ public class PlayerCombat : MonoBehaviour
                 if (hitStopCoroutine != null) StopCoroutine(hitStopCoroutine);
                 hitStopCoroutine = StartCoroutine(DoHitStop());
 
-                // Kan efekti — prefab varsa kullan, yoksa procedural
+                // Kan + Impact VFX (SpawnBlood içinde birlikte yapılıyor)
                 SpawnBlood(hit.transform.position);
-
-                // Impact VFX
-                if (impactVFXPrefab != null)
-                    Instantiate(impactVFXPrefab, hit.transform.position + Vector3.up * 0.5f, Quaternion.identity);
             }
 
             // Knockback
@@ -212,24 +208,34 @@ public class PlayerCombat : MonoBehaviour
     /// </summary>
     private void SpawnBlood(Vector3 enemyPos)
     {
+        // Hit noktası (düşman gövde ortası + biraz yukarı)
+        Vector3 hitPoint = enemyPos + Vector3.up * 0.7f;
+
         if (bloodBurstPrefab != null)
         {
-            // Birden fazla kan fışkırması
-            for (int i = 0; i < bloodParticlesPerHit; i++)
+            // 2-3 kan efekti farklı offset'lerde
+            int count = Random.Range(2, bloodParticlesPerHit + 2);
+            for (int i = 0; i < count; i++)
             {
                 Vector3 offset = new Vector3(
-                    Random.Range(-0.4f, 0.4f),
-                    Random.Range(0.5f, 1.6f),
+                    Random.Range(-0.35f, 0.35f),
+                    Random.Range(0f, 0.6f),
                     0f);
-                var vfx = Instantiate(bloodBurstPrefab, enemyPos + offset, Quaternion.identity);
-                // Her VFX'i hafif farklı scale'de spawnla
-                vfx.transform.localScale = Vector3.one * Random.Range(0.6f, 1.4f);
+                var vfx = Instantiate(bloodBurstPrefab, hitPoint + offset, Quaternion.Euler(0, 0, Random.Range(-30f, 30f)));
+                vfx.transform.localScale = Vector3.one * Random.Range(0.5f, 1.1f);
             }
         }
         else
         {
-            // Procedural kan damlacıkları (sprite gerektirmez)
-            StartCoroutine(SpawnProceduralBlood(enemyPos));
+            // Prefab yoksa procedural
+            StartCoroutine(SpawnProceduralBlood(hitPoint));
+        }
+
+        // Impact VFX — her vuruşta, kanın üzerinde
+        if (impactVFXPrefab != null)
+        {
+            var impact = Instantiate(impactVFXPrefab, hitPoint, Quaternion.identity);
+            impact.transform.localScale = Vector3.one * Random.Range(0.7f, 1.0f);
         }
     }
 

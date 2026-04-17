@@ -1,93 +1,77 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 /// <summary>
-/// Professional Enemy Health System with damage, knockback, and visual feedback
-/// Integrates with EnemyAI state machine
+/// Professional Enemy Health System with damage, knockback, limb dismemberment, and head-pop death.
 /// </summary>
 public class EnemyHealth : MonoBehaviour, IHealth
 {
-    [Header("â•â•â• HEALTH SETTINGS â•â•â•")]
+    [Header("═══ HEALTH SETTINGS ═══")]
     [SerializeField] private float maxHealth = 100f;
-    [SerializeField] private bool destroyOnDeath = true;
-    [SerializeField] private float deathDelay = 0.5f;
-    [SerializeField] private bool verboseLogs = false;
+    [SerializeField] private bool  destroyOnDeath = true;
+    [SerializeField] private bool  verboseLogs    = false;
 
-    [Header("â•â•â• VISUAL FEEDBACK â•â•â•")]
+    [Header("═══ VISUAL FEEDBACK ═══")]
     [SerializeField] private Color damageFlashColor = Color.red;
-    [SerializeField] private float flashDuration = 0.1f;
-    [SerializeField] private Color deathColor = new Color(0.3f, 0.3f, 0.3f);
+    [SerializeField] private float flashDuration    = 0.1f;
 
-    [Header("â•â•â• KNOCKBACK SETTINGS â•â•â•")]
-    [SerializeField] private float knockbackDecay = 0.95f;
-
-    [Header("â•â•â• VFX & SFX â•â•â•")]
+    [Header("═══ VFX & SFX ═══")]
     [SerializeField] private GameObject damageVFXPrefab;
     [SerializeField] private GameObject deathVFXPrefab;
-    [SerializeField] private AudioClip damageSFX;
-    [SerializeField] private AudioClip deathSFX;
+    [SerializeField] private AudioClip  damageSFX;
+    [SerializeField] private AudioClip  deathSFX;
 
-    [Header("â•â•â• LIMB DISMEMBERMENT â•â•â•")]
-    [SerializeField] private bool enableLimbDismemberment = true;
-    [SerializeField] private float dismembermentChancePerHit = 0.3f; // 30% ÅŸansÄ± her hit'te
-    [SerializeField] private int maxLimbsToLose = 4; // Maksimum kaÃ§ limb kaybedilebilir (2 arm + 2 leg)
-    [SerializeField] private AudioClip limbLossedSFX;
-    [SerializeField] private Transform[] manualLimbParts; // Inspector'da manuel olarak assign et
+    [Header("═══ LIMB DISMEMBERMENT ═══")]
+    [SerializeField] private bool        enableLimbDismemberment  = true;
+    [SerializeField] private float       dismembermentChancePerHit = 0.3f;
+    [SerializeField] private int         maxLimbsToLose            = 4;
+    [SerializeField] private AudioClip   limbLossedSFX;
+    [SerializeField] private Transform[] manualLimbParts;
 
-    private float currentHealth;
-    private Rigidbody2D rb;
+    // ── Private state ──
+    private float          currentHealth;
+    private Rigidbody2D    rb;
     private SpriteRenderer spriteRenderer;
-    private AudioSource audioSource;
-    private Animator animator;
-    private Color originalColor;
-    private bool isDead = false;
-    private EnemyAI enemyAI;
+    private AudioSource    audioSource;
+    private Animator       animator;
+    private Color          originalColor;
+    private bool           isDead = false;
+    private EnemyAI        enemyAI;
 
-    // Body parts tracking
     private Transform[] limbParts;
-    private int limbsLost = 0;
-    private int legsLost = 0; // Bacak sayÄ±sÄ±
-    private bool rightArmLost = false; // SaÄŸ kol kopma durumu
-    private bool leftArmLost = false; // Sol kol kopma durumu
+    private int         limbsLost    = 0;
+    private int         legsLost     = 0;
+    private bool        rightArmLost = false;
+    private bool        leftArmLost  = false;
 
-    // Animator hash
     private int hashHurt;
     private int hashDying;
 
+    // ─────────────────────────────────────────────────────────────
+    //  INIT
+    // ─────────────────────────────────────────────────────────────
     private void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
+        rb             = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        audioSource = GetComponent<AudioSource>();
-        animator = GetComponent<Animator>();
-        enemyAI = GetComponent<EnemyAI>();
+        audioSource    = GetComponent<AudioSource>();
+        animator       = GetComponent<Animator>();
+        enemyAI        = GetComponent<EnemyAI>();
 
-        if (spriteRenderer != null)
-        {
-            originalColor = spriteRenderer.color;
-        }
+        if (spriteRenderer != null) originalColor = spriteRenderer.color;
 
-        // Cache animator hash
         if (animator != null)
         {
-            hashHurt = Animator.StringToHash("Hurt");
+            hashHurt  = Animator.StringToHash("Hurt");
             hashDying = Animator.StringToHash("Dying");
         }
 
-        // Find all limb parts (Left Arm, Right Arm, Left Leg, Right Leg)
         if (enableLimbDismemberment)
         {
-            // EÄŸer manuel olarak assign edildiyse, onlarÄ± kullan
             if (manualLimbParts != null && manualLimbParts.Length > 0)
-            {
                 limbParts = manualLimbParts;
-                LogVerbose($"ğŸ“‹ {gameObject.name} iÃ§in {limbParts.Length} limb manuel olarak assign edildi");
-            }
             else
-            {
-                // Yoksa otomatik bul
                 CollectLimbParts();
-            }
         }
     }
 
@@ -96,60 +80,33 @@ public class EnemyHealth : MonoBehaviour, IHealth
         currentHealth = maxHealth;
     }
 
-    /// <summary>
-    /// Takes damage and applies knockback (IHealth implementation)
-    /// </summary>
+    // ─────────────────────────────────────────────────────────────
+    //  IHealth IMPLEMENTATION
+    // ─────────────────────────────────────────────────────────────
     public void TakeDamage(float damage)
     {
         if (isDead) return;
 
         currentHealth -= damage;
-        LogVerbose($"âš¡ {gameObject.name} hasar aldÄ±! -{damage} HP | Kalan: {currentHealth:F0}/{maxHealth}");
+        LogVerbose($"⚡ {gameObject.name} -{damage} HP | Kalan: {currentHealth:F0}/{maxHealth}");
 
-        // Play hurt animation
-        if (animator != null)
-        {
-            animator.SetTrigger(hashHurt);
-        }
-
-        // Visual feedback
+        if (animator != null) animator.SetTrigger(hashHurt);
         StartCoroutine(DamageFlash());
-
-        // Play sound
         PlaySound(damageSFX);
 
-        // Camera shake effect (Enemy hit)
-        if (CameraEffects.Instance != null)
-        {
-            CameraEffects.Instance.EnemyHitEffect();
-        }
-
-        // Spawn VFX
+        if (CameraEffects.Instance != null) CameraEffects.Instance.EnemyHitEffect();
         if (damageVFXPrefab != null)
-        {
             Instantiate(damageVFXPrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
-        }
 
-        // Check if limb should be dismembered
         if (enableLimbDismemberment && limbsLost < maxLimbsToLose && Random.value < dismembermentChancePerHit)
-        {
             DismemberRandomLimb();
-        }
 
-        // Check death
-        if (currentHealth <= 0)
-        {
-            Die();
-        }
+        if (currentHealth <= 0) Die();
     }
 
-    /// <summary>
-    /// Takes damage with custom knockback direction and force
-    /// </summary>
     public void TakeDamage(float damage, Vector2 knockbackDirection, float knockbackForce)
     {
         TakeDamage(damage);
-
         if (!isDead && rb != null)
         {
             rb.linearVelocity = Vector2.zero;
@@ -157,275 +114,198 @@ public class EnemyHealth : MonoBehaviour, IHealth
         }
     }
 
+    // ─────────────────────────────────────────────────────────────
+    //  VISUAL FEEDBACK
+    // ─────────────────────────────────────────────────────────────
     private IEnumerator DamageFlash()
     {
-        // Bulunan tÃ¼m sprite'larÄ± kÄ±zart (Skeletal animation'lar iÃ§in root'ta deÄŸil child'larda olabilir)
         SpriteRenderer[] renderers = GetComponentsInChildren<SpriteRenderer>();
         Color[] origColors = new Color[renderers.Length];
-        
         for (int i = 0; i < renderers.Length; i++)
         {
-            origColors[i] = renderers[i].color;
-            renderers[i].color = damageFlashColor;
+            origColors[i]       = renderers[i].color;
+            renderers[i].color  = damageFlashColor;
         }
 
-        // VuruÅŸ hissi (Squash and Stretch) iÃ§in anlÄ±k esneme
-        Vector3 origScale = transform.localScale;
+        Vector3 origScale    = transform.localScale;
         transform.localScale = new Vector3(origScale.x * 1.1f, origScale.y * 0.9f, origScale.z);
 
         yield return new WaitForSeconds(flashDuration);
 
-        // Eski haline geri dÃ¶ndÃ¼r
         transform.localScale = origScale;
-        
         for (int i = 0; i < renderers.Length; i++)
-        {
-            if (renderers[i] != null)
-                renderers[i].color = origColors[i];
-        }
+            if (renderers[i] != null) renderers[i].color = origColors[i];
     }
 
-    /// <summary>
-    /// Find all body parts (limbs) on the enemy
-    /// </summary>
+    // ─────────────────────────────────────────────────────────────
+    //  LIMB DISMEMBERMENT
+    // ─────────────────────────────────────────────────────────────
     private void CollectLimbParts()
     {
-        // Get all child transforms
         Transform[] allChildren = GetComponentsInChildren<Transform>();
-        System.Collections.Generic.List<Transform> limbs = new System.Collections.Generic.List<Transform>();
-
-        // Find limb parts by name
+        var limbs = new System.Collections.Generic.List<Transform>();
         foreach (Transform child in allChildren)
         {
-            if (child == transform) continue; // Skip the parent
-
-            string name = child.name.ToLower();
-            if (name.Contains("arm") || name.Contains("leg") || name.Contains("hand"))
-            {
+            if (child == transform) continue;
+            string n = child.name.ToLower();
+            if (n.Contains("arm") || n.Contains("leg") || n.Contains("hand"))
                 limbs.Add(child);
-            }
         }
-
         limbParts = limbs.ToArray();
-        LogVerbose($"ğŸ¦µ {gameObject.name} iÃ§in {limbParts.Length} limb bulundu");
+        LogVerbose($"🦵 {gameObject.name}: {limbParts.Length} limb bulundu");
     }
 
-    /// <summary>
-    /// Disable and remove a random limb
-    /// </summary>
     private void DismemberRandomLimb()
     {
         if (limbParts == null || limbParts.Length == 0) return;
 
-        // Find all active limbs
-        System.Collections.Generic.List<Transform> activeLimbs = new System.Collections.Generic.List<Transform>();
+        var activeLimbs = new System.Collections.Generic.List<Transform>();
         foreach (Transform limb in limbParts)
         {
-            if (limb != null && limb.gameObject.activeSelf)
-            {
-                // MAX 1 BACAK KOPSIN! 
-                string limbName = limb.name.ToLower();
-                if ((limbName.Contains("leg")) && legsLost >= 1)
-                {
-                    continue; // Bu bacaÄŸÄ± atla, zaten 1 kopmuÅŸ
-                }
-                
-                activeLimbs.Add(limb);
-            }
+            if (limb == null || !limb.gameObject.activeSelf) continue;
+            if (limb.name.ToLower().Contains("leg") && legsLost >= 1) continue;
+            activeLimbs.Add(limb);
         }
-
         if (activeLimbs.Count == 0) return;
 
-        // Pick a random limb
         Transform limbToRemove = activeLimbs[Random.Range(0, activeLimbs.Count)];
-        string limbType = limbToRemove.name.ToLower();
-        
-        // --- Spawn detached physics limb ---
-        SpriteRenderer limbSpriteRenderer = limbToRemove.GetComponent<SpriteRenderer>();
-        if (limbSpriteRenderer != null && limbSpriteRenderer.sprite != null)
+        string    limbType     = limbToRemove.name.ToLower();
+
+        // Kopan limb fiziği
+        SpriteRenderer limbSR = limbToRemove.GetComponent<SpriteRenderer>();
+        if (limbSR != null && limbSR.sprite != null)
         {
-            GameObject detachedLimb = new GameObject("Detached_" + limbToRemove.name);
-            detachedLimb.transform.position = limbToRemove.position;
-            detachedLimb.transform.rotation = limbToRemove.rotation;
-            detachedLimb.transform.localScale = limbToRemove.lossyScale;
+            GameObject detached = new GameObject("Detached_" + limbToRemove.name);
+            detached.transform.position   = limbToRemove.position;
+            detached.transform.rotation   = limbToRemove.rotation;
+            detached.transform.localScale = limbToRemove.lossyScale;
 
-            SpriteRenderer sr = detachedLimb.AddComponent<SpriteRenderer>();
-            sr.sprite = limbSpriteRenderer.sprite;
-            sr.sortingLayerID = limbSpriteRenderer.sortingLayerID;
-            sr.sortingOrder = limbSpriteRenderer.sortingOrder;
-            sr.color = limbSpriteRenderer.color;
+            var sr            = detached.AddComponent<SpriteRenderer>();
+            sr.sprite         = limbSR.sprite;
+            sr.sortingLayerID = limbSR.sortingLayerID;
+            sr.sortingOrder   = limbSR.sortingOrder;
+            sr.color          = limbSR.color;
 
-            Rigidbody2D limbRb = detachedLimb.AddComponent<Rigidbody2D>();
+            var limbRb = detached.AddComponent<Rigidbody2D>();
             limbRb.mass = 0.5f;
-            Vector2 dropForce = new Vector2(Random.Range(-5f, 5f), Random.Range(3f, 8f));
-            limbRb.AddForce(dropForce, ForceMode2D.Impulse);
+            limbRb.AddForce(new Vector2(Random.Range(-5f, 5f), Random.Range(3f, 8f)), ForceMode2D.Impulse);
             limbRb.AddTorque(Random.Range(-100f, 100f));
-
-            detachedLimb.AddComponent<PolygonCollider2D>();
-            Destroy(detachedLimb, 5f); // 5 saniye sonra yok et
+            detached.AddComponent<PolygonCollider2D>();
+            Destroy(detached, 5f);
         }
-        // -----------------------------------
 
-        // Disable it
         limbToRemove.gameObject.SetActive(false);
         limbsLost++;
 
-        // Apply limb-specific effects
         if (limbType.Contains("leg"))
         {
             legsLost++;
-            ApplyLegLossEffect();
-            LogVerbose($"ğŸ’¥ {gameObject.name} bacak kaybetti! Bacaklar: {legsLost}/1");
+            if (enemyAI != null) enemyAI.ApplyLimbDamageEffect(0.5f, true);
         }
         else if (limbType.Contains("arm") || limbType.Contains("hand"))
         {
-            ApplyArmLossEffect(limbToRemove);
-            LogVerbose($"ğŸ’¥ {gameObject.name} kol kaybetti! '{limbToRemove.name}'");
+            if (limbType.Contains("right"))      rightArmLost = true;
+            else if (limbType.Contains("left"))  leftArmLost  = true;
+
+            if (rightArmLost && leftArmLost && enemyAI != null)
+                enemyAI.DisableAttacks();
         }
 
-        // Play sound effect
         PlaySound(limbLossedSFX);
     }
 
-    /// <summary>
-    /// Bacak kaybÄ± etkileri - yavaÅŸla ve sendeleme
-    /// </summary>
-    private void ApplyLegLossEffect()
-    {
-        if (enemyAI != null)
-        {
-            // HÄ±zÄ± 0.5x yap
-            enemyAI.ApplyLimbDamageEffect(0.5f, true);
-        }
-    }
-
-    /// <summary>
-    /// Kol kaybÄ± etkileri - saldÄ±rÄ± devre dÄ±ÅŸÄ±
-    /// </summary>
-    private void ApplyArmLossEffect(Transform armLimb)
-    {
-        string armName = armLimb.name.ToLower();
-        
-        if (armName.Contains("right"))
-        {
-            rightArmLost = true;
-        }
-        else if (armName.Contains("left"))
-        {
-            leftArmLost = true;
-        }
-
-        // EÄŸer iki kol da kopmuÅŸsa, saldÄ±rÄ± yapamaz
-        if (rightArmLost && leftArmLost)
-        {
-            if (enemyAI != null)
-            {
-                enemyAI.DisableAttacks();
-                LogVerbose($"ğŸš« {gameObject.name} kollarÄ± kopmasÄ±ndan saldÄ±ramÄ±yor!");
-            }
-        }
-    }
-
+    // ─────────────────────────────────────────────────────────────
+    //  DEATH — KAFA KOPMA
+    // ─────────────────────────────────────────────────────────────
     private void Die()
     {
         isDead = true;
-        LogVerbose($"ğŸ’€ {gameObject.name} Ã¶ldÃ¼!");
-
-        // Ã–lÃ¼m sekansÄ±nÄ± baÅŸlat
         StartCoroutine(DeathSequence());
     }
 
     private IEnumerator DeathSequence()
     {
-        // Ã–lÃ¼m animasyonunu oynat
-        if (animator != null)
-        {
-            animator.SetTrigger(hashDying);
-            
-            // State transition'Ä±n gerÃ§ekleÅŸmesi iÃ§in birkaÃ§ frame bekle
-            yield return new WaitForSeconds(0.1f);
-            
-            // Animator state info'yu al
-            AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-            float animationDuration = stateInfo.length;
-            
-            // EÄŸer 3 saniyeden uzunsa (muhtemelen loop time aÃ§Ä±k), cap it
-            if (animationDuration > 3f)
-            {
-                animationDuration = 1.5f;
-            }
-            
-            // Animasyon Ã§alÄ±ÅŸmasÄ± iÃ§in animator'u Ã§alÄ±ÅŸtÄ±r bÄ±rak
-            // (animator'u disable etmeyin, loop time kapalÄ± olduÄŸu iÃ§in otomatik bitecek)
-            // Animasyon sÃ¼resi kadar bekle
-            yield return new WaitForSeconds(animationDuration);
-        }
-        else
-        {
-            yield return new WaitForSeconds(1f);
-        }
-
-        // Heavy camera impact (Enemy death)
-        if (CameraEffects.Instance != null)
-        {
-            CameraEffects.Instance.HeavyImpactEffect();
-        }
-
-        // Disable AI behavior
-        if (enemyAI != null)
-        {
-            enemyAI.enabled = false;
-        }
-
-        // Stop movement
+        // AI ve hareketi anında durdur
+        if (enemyAI  != null) enemyAI.enabled  = false;
+        if (animator != null) animator.enabled = false;
         if (rb != null)
         {
             rb.linearVelocity = Vector2.zero;
-            rb.bodyType = RigidbodyType2D.Kinematic;
+            rb.bodyType       = RigidbodyType2D.Kinematic;
         }
 
-        // Play death sound
+        // Efektler
+        if (CameraEffects.Instance != null) CameraEffects.Instance.HeavyImpactEffect();
         PlaySound(deathSFX);
+        if (deathVFXPrefab != null) Instantiate(deathVFXPrefab, transform.position, Quaternion.identity);
 
-        // Death VFX
-        if (deathVFXPrefab != null)
+        // ── KAFA KOPMA ──
+        Transform  headBone     = FindDeep(transform, "Head");
+        GameObject detachedHead = null;
+
+        if (headBone != null)
         {
-            Instantiate(deathVFXPrefab, transform.position, Quaternion.identity);
+            headBone.SetParent(null);
+
+            var headRB = headBone.GetComponent<Rigidbody2D>();
+            if (headRB == null) headRB = headBone.gameObject.AddComponent<Rigidbody2D>();
+            headRB.bodyType     = RigidbodyType2D.Dynamic;
+            headRB.gravityScale = 4f;
+
+            float dirX             = Random.value > 0.5f ? 1f : -1f;
+            headRB.linearVelocity  = new Vector2(dirX * Random.Range(3f, 6f), Random.Range(6f, 10f));
+            headRB.angularVelocity = dirX * Random.Range(180f, 400f);
+
+            detachedHead = headBone.gameObject;
         }
 
-        // NOW disable animator - animasyon bittiÄŸinden sonra
-        if (animator != null)
-        {
-            animator.enabled = false;
-        }
-
-        // Yerde Ã¶lÃ¼ kalsÄ±n biraz
-        yield return new WaitForSeconds(deathDelay + 1.5f);
-
-        // Fade out
-        float fadeDuration = 2f;
+        // Gövde koyulaşır (kırmızı tonu)
         if (spriteRenderer != null)
-        {
-            yield return StartCoroutine(FadeOut(fadeDuration));
-        }
+            spriteRenderer.color = new Color(0.25f, 0.1f, 0.1f, 1f);
 
-        // TamamlandÄ±, ÅŸimdi destroy et
-        if (destroyOnDeath)
+        // Kısa bekle — kafa düşsün, dramatik an
+        yield return new WaitForSeconds(0.5f);
+
+        // Gövdeyi hızlı fade et (0.8s)
+        yield return StartCoroutine(FadeRenderers(GetComponentsInChildren<SpriteRenderer>(), 0.8f));
+
+        if (destroyOnDeath) gameObject.SetActive(false);
+
+        // Kafayı yavaşça fade et (1.2s)
+        if (detachedHead != null)
         {
-            gameObject.SetActive(false);
+            yield return new WaitForSeconds(0.4f);
+            if (detachedHead != null)
+            {
+                yield return StartCoroutine(FadeRenderers(detachedHead.GetComponentsInChildren<SpriteRenderer>(), 1.2f));
+                Destroy(detachedHead);
+            }
         }
     }
 
-    private IEnumerator FadeOut(float duration = 0.5f)
+    // ─────────────────────────────────────────────────────────────
+    //  HELPERS
+    // ─────────────────────────────────────────────────────────────
+    private Transform FindDeep(Transform parent, string searchName)
+    {
+        foreach (Transform child in parent)
+        {
+            if (child.name == searchName) return child;
+            var r = FindDeep(child, searchName);
+            if (r != null) return r;
+        }
+        return null;
+    }
+
+    private IEnumerator FadeRenderers(SpriteRenderer[] renderers, float duration)
     {
         float elapsed = 0f;
-        while (elapsed < duration && spriteRenderer != null)
+        while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float alpha = Mathf.Lerp(1f, 0f, elapsed / duration);
-            Color color = spriteRenderer.color;
-            color.a = alpha;
-            spriteRenderer.color = color;
+            float a = Mathf.Lerp(1f, 0f, elapsed / duration);
+            foreach (var sr in renderers)
+                if (sr != null) { var c = sr.color; c.a = a; sr.color = c; }
             yield return null;
         }
     }
@@ -433,47 +313,42 @@ public class EnemyHealth : MonoBehaviour, IHealth
     private void PlaySound(AudioClip clip)
     {
         if (clip != null && audioSource != null)
-        {
             audioSource.PlayOneShot(clip);
-        }
     }
 
     private void LogVerbose(string message)
     {
-        if (verboseLogs)
-        {
-            Debug.Log(message);
-        }
+        if (verboseLogs) Debug.Log(message);
     }
 
+    // ─────────────────────────────────────────────────────────────
+    //  PUBLIC API
+    // ─────────────────────────────────────────────────────────────
     public float GetHealthPercent() => currentHealth / maxHealth;
     public float GetCurrentHealth() => currentHealth;
-    public float GetMaxHealth() => maxHealth;
-    public bool IsDead() => isDead;
+    public float GetMaxHealth()     => maxHealth;
+    public bool  IsDead()           => isDead;
 
-    /// <summary>GameManager tarafindan cagrilir: dusmani tam saglikla sifirlar.</summary>
+    /// <summary>GameManager tarafından çağrılır: düşmanı tam sağlıkla sıfırlar.</summary>
     public void ResetHealth()
     {
-        isDead = false;
+        isDead        = false;
         currentHealth = maxHealth;
-        limbsLost = 0;
-        legsLost = 0;
-        rightArmLost = false;
-        leftArmLost = false;
+        limbsLost     = 0;
+        legsLost      = 0;
+        rightArmLost  = false;
+        leftArmLost   = false;
 
-        // Limbleri geri ac
         if (limbParts != null)
             foreach (var limb in limbParts)
                 if (limb != null) limb.gameObject.SetActive(true);
 
-        // Sprite rengini sifirla
         var renderers = GetComponentsInChildren<SpriteRenderer>();
         foreach (var sr in renderers)
-            if (sr != null) sr.color = sr == spriteRenderer ? originalColor : Color.white;
+            if (sr != null) sr.color = (sr == spriteRenderer) ? originalColor : Color.white;
 
-        // Animator'u yeniden baslat
         if (animator != null) { animator.enabled = true; animator.Rebind(); }
 
-        Debug.Log($"â™»ï¸ {gameObject.name} saglik sifirlandi.");
+        Debug.Log($"♻️ {gameObject.name} sağlık sıfırlandı.");
     }
 }

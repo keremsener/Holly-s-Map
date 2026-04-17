@@ -51,11 +51,19 @@ public class CameraEffects : MonoBehaviour
     }
 
     /// <summary>
-    /// Kılıç vuruşu - Güçlü red vignette + aggressive shake
+    /// Kılıç vuruşu — orta güçlü shake + kırmızı vignette.
+    /// Her vuruşta yeniden başlar.
     /// </summary>
     public void MeleeHitEffect()
     {
-        StartCoroutine(CombinedShakeVignette(Color.red, vignetteDuration, shakeIntensity, shakeDuration));
+        StopAllCoroutines();
+        isShaking = false;
+        StartCoroutine(CombinedShakeVignette(
+            Color.red,
+            vignetteDuration * 0.55f,  // 0.25 * 0.55 = 0.138s
+            shakeIntensity   * 0.55f,  // 0.4 * 0.55  = 0.22
+            shakeDuration    * 0.45f   // 0.25 * 0.45 = 0.112s
+        ));
         if (verboseLogs) Debug.Log("⚔️ === MELEE HIT ===");
     }
 
@@ -70,12 +78,23 @@ public class CameraEffects : MonoBehaviour
     }
 
     /// <summary>
-    /// Enemy hit effect - Işık sarı vignette + minimal shake
+    /// Oyuncu düşmana vurdu — hafif ama tatmin edici shake.
+    /// Tak-tak-tak seri vuruşta her seferinde tetiklenir.
     /// </summary>
     public void EnemyHitEffect()
     {
-        Color damageGlow = new Color(1f, 0.7f, 0f);
-        StartCoroutine(CombinedShakeVignette(damageGlow, vignetteDuration * 0.7f, shakeIntensity * 0.4f, shakeDuration * 0.5f));
+        // Her vuruşta shake'i yeniden başlat
+        StopAllCoroutines();
+        isShaking = false;
+
+        // Hafif altın vignette + küçük shake
+        Color hitGlow = new Color(1f, 0.78f, 0.1f);
+        StartCoroutine(CombinedShakeVignette(
+            hitGlow,
+            vignetteDuration * 0.45f,  // kısa vignette
+            shakeIntensity   * 0.20f,  // hafif shake (default 0.4 * 0.20 = 0.08)
+            shakeDuration    * 0.30f   // çabuk biter (default 0.25 * 0.30 = 0.075s)
+        ));
     }
 
     /// <summary>
@@ -100,40 +119,35 @@ public class CameraEffects : MonoBehaviour
     private IEnumerator ShakeCamera(float duration, float intensity)
     {
         if (mainCamera == null) yield break;
-        if (isShaking) yield break;
 
+        // isShaking guard kaldırıldı — her vuruşta yeniden başlar
+        StopCoroutine("ShakeCamera"); // önceki shake'i iptal et
         isShaking = true;
         float elapsed = 0f;
-        Vector3 startPos = mainCamera.transform.position;
-        float savedZ = startPos.z;
+
+        // Şu anki kamera pozisyonunu origin al (başka bir shake bitmemiş olabilir)
+        float ox = Mathf.Round(mainCamera.transform.position.x * 1000f) / 1000f;
+        float oy = Mathf.Round(mainCamera.transform.position.y * 1000f) / 1000f;
+        float oz = mainCamera.transform.position.z;
 
         while (elapsed < duration)
         {
-            elapsed += Time.deltaTime;
-            float progress = elapsed / duration;
+            elapsed += Time.unscaledDeltaTime; // hitstop sırasında da çalışır
+            float t    = elapsed / duration;
+            float kick = intensity * (1f - t * t); // ease-out: başta güçlü, sonda sıfır
 
-            // Easing - shake azalsın
-            float currentIntensity = intensity * Mathf.Lerp(1f, 0f, progress);
+            // Perlin noise — random'dan çok daha smooth ve doğal
+            float seed = Time.unscaledTime * 55f;
+            float px   = (Mathf.PerlinNoise(seed,        0.3f) - 0.5f) * 2f;
+            float py   = (Mathf.PerlinNoise(seed + 17f,  0.7f) - 0.5f) * 2f;
 
-            // Agresif random shake (Perlin değil, gerçekçi çarpma hissi)
-            float shakeX = Random.Range(-1f, 1f) * currentIntensity;
-            float shakeY = Random.Range(-1f, 1f) * currentIntensity;
-
-            Vector3 newPos = startPos;
-            newPos.x += shakeX;
-            newPos.y += shakeY;
-            newPos.z = savedZ; // Z değişmesin!
-
-            mainCamera.transform.position = newPos;
+            mainCamera.transform.position = new Vector3(ox + px * kick, oy + py * kick, oz);
             yield return null;
         }
 
-        // Kesinlikle orijinal pozisyona dön
-        Vector3 finalPos = mainCamera.transform.position;
-        finalPos.x = startPos.x;
-        finalPos.y = startPos.y;
-        finalPos.z = savedZ;
-        mainCamera.transform.position = finalPos;
+        // Orijinal pozisyona kesin dönüş
+        var cur = mainCamera.transform.position;
+        mainCamera.transform.position = new Vector3(ox, oy, oz);
         isShaking = false;
     }
 
