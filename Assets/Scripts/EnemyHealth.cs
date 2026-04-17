@@ -11,6 +11,7 @@ public class EnemyHealth : MonoBehaviour, IHealth
     [SerializeField] private float maxHealth = 100f;
     [SerializeField] private bool destroyOnDeath = true;
     [SerializeField] private float deathDelay = 0.5f;
+    [SerializeField] private bool verboseLogs = false;
 
     [Header("═══ VISUAL FEEDBACK ═══")]
     [SerializeField] private Color damageFlashColor = Color.red;
@@ -80,7 +81,7 @@ public class EnemyHealth : MonoBehaviour, IHealth
             if (manualLimbParts != null && manualLimbParts.Length > 0)
             {
                 limbParts = manualLimbParts;
-                Debug.Log($"📋 {gameObject.name} için {limbParts.Length} limb manuel olarak assign edildi");
+                LogVerbose($"📋 {gameObject.name} için {limbParts.Length} limb manuel olarak assign edildi");
             }
             else
             {
@@ -103,7 +104,7 @@ public class EnemyHealth : MonoBehaviour, IHealth
         if (isDead) return;
 
         currentHealth -= damage;
-        Debug.Log($"⚡ {gameObject.name} hasar aldı! -{damage} HP | Kalan: {currentHealth:F0}/{maxHealth}");
+        LogVerbose($"⚡ {gameObject.name} hasar aldı! -{damage} HP | Kalan: {currentHealth:F0}/{maxHealth}");
 
         // Play hurt animation
         if (animator != null)
@@ -187,7 +188,7 @@ public class EnemyHealth : MonoBehaviour, IHealth
         }
 
         limbParts = limbs.ToArray();
-        Debug.Log($"🦵 {gameObject.name} için {limbParts.Length} limb bulundu");
+        LogVerbose($"🦵 {gameObject.name} için {limbParts.Length} limb bulundu");
     }
 
     /// <summary>
@@ -229,12 +230,12 @@ public class EnemyHealth : MonoBehaviour, IHealth
         {
             legsLost++;
             ApplyLegLossEffect();
-            Debug.Log($"💥 {gameObject.name} bacak kaybetti! Bacaklar: {legsLost}/1");
+            LogVerbose($"💥 {gameObject.name} bacak kaybetti! Bacaklar: {legsLost}/1");
         }
         else if (limbType.Contains("arm") || limbType.Contains("hand"))
         {
             ApplyArmLossEffect(limbToRemove);
-            Debug.Log($"💥 {gameObject.name} kol kaybetti! '{limbToRemove.name}'");
+            LogVerbose($"💥 {gameObject.name} kol kaybetti! '{limbToRemove.name}'");
         }
 
         // Play sound effect
@@ -275,7 +276,7 @@ public class EnemyHealth : MonoBehaviour, IHealth
             if (enemyAI != null)
             {
                 enemyAI.DisableAttacks();
-                Debug.Log($"🚫 {gameObject.name} kolları kopmasından saldıramıyor!");
+                LogVerbose($"🚫 {gameObject.name} kolları kopmasından saldıramıyor!");
             }
         }
     }
@@ -283,7 +284,7 @@ public class EnemyHealth : MonoBehaviour, IHealth
     private void Die()
     {
         isDead = true;
-        Debug.Log($"💀 {gameObject.name} öldü!");
+        LogVerbose($"💀 {gameObject.name} öldü!");
 
         // Ölüm sekansını başlat
         StartCoroutine(DeathSequence());
@@ -335,7 +336,7 @@ public class EnemyHealth : MonoBehaviour, IHealth
         if (rb != null)
         {
             rb.linearVelocity = Vector2.zero;
-            rb.isKinematic = true;
+            rb.bodyType = RigidbodyType2D.Kinematic;
         }
 
         // Play death sound
@@ -354,7 +355,7 @@ public class EnemyHealth : MonoBehaviour, IHealth
         }
 
         // Yerde ölü kalsın biraz
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(deathDelay + 1.5f);
 
         // Fade out
         float fadeDuration = 2f;
@@ -389,6 +390,14 @@ public class EnemyHealth : MonoBehaviour, IHealth
         if (clip != null && audioSource != null)
         {
             audioSource.PlayOneShot(clip);
+        }
+    }
+
+    private void LogVerbose(string message)
+    {
+        if (verboseLogs)
+        {
+            Debug.Log(message);
         }
     }
 

@@ -74,6 +74,8 @@ public class PlayerController : MonoBehaviour
 
     private void HandleParticles()
     {
+        if (dustParticles == null) return;
+
         var emission = dustParticles.emission; // Parçacık sisteminin yayılma ayarını al
 
         // Karakter yerde ve hareket halindeyse toz çıkart

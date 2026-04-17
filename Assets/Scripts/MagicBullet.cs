@@ -83,6 +83,12 @@ public class MagicBullet : MonoBehaviour
         hasHit = true;
         Debug.Log($"💥 Büyü {enemyCollider.gameObject.name} ile çarpıştı!");
 
+        Vector2 knockbackDirection = (enemyCollider.transform.position - transform.position).normalized;
+        if (knockbackDirection.sqrMagnitude < 0.0001f)
+        {
+            knockbackDirection = transform.right;
+        }
+
         // Düşmanın konumuna ışık yerleştir
         transform.position = enemyCollider.transform.position;
 
@@ -97,8 +103,6 @@ public class MagicBullet : MonoBehaviour
         var enemyHealth = enemyCollider.GetComponent<IHealth>();
         if (enemyHealth != null)
         {
-            // Calculate knockback direction
-            Vector2 knockbackDirection = (enemyCollider.transform.position - transform.position).normalized;
             enemyHealth.TakeDamage(damage);
             
             // Ekran vignette yapmıyoruz - düşmanın etrafında zaten mor ışık var

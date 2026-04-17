@@ -56,7 +56,8 @@ public class MainMenu : MonoBehaviour
     {
         if (mainMixer != null)
         {
-            mainMixer.SetFloat("MusicVolume", Mathf.Log10(volume) * 20);
+            float safeVolume = Mathf.Clamp(volume, 0.0001f, 1f);
+            mainMixer.SetFloat("MusicVolume", Mathf.Log10(safeVolume) * 20);
         }
     }
 

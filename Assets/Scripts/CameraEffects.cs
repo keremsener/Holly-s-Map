@@ -16,6 +16,7 @@ public class CameraEffects : MonoBehaviour
     [SerializeField] private float vignetteIntensity = 0.8f;
     [SerializeField] private float vignetteDuration = 0.35f;
     [SerializeField] private Image vignettePanel;
+    [SerializeField] private bool verboseLogs = false;
 
     private Camera mainCamera;
     private Vector3 originalCameraPosition;
@@ -55,7 +56,7 @@ public class CameraEffects : MonoBehaviour
     public void MeleeHitEffect()
     {
         StartCoroutine(CombinedShakeVignette(Color.red, vignetteDuration, shakeIntensity, shakeDuration));
-        Debug.Log("⚔️ === MELEE HIT ===");
+        if (verboseLogs) Debug.Log("⚔️ === MELEE HIT ===");
     }
 
     /// <summary>
@@ -65,7 +66,7 @@ public class CameraEffects : MonoBehaviour
     {
         Color magicPurple = new Color(0.8f, 0.2f, 1f);
         StartCoroutine(CombinedShakeVignette(magicPurple, vignetteDuration * 0.9f, shakeIntensity * 0.7f, shakeDuration * 0.8f));
-        Debug.Log("🔮 === MAGIC HIT ===");
+        if (verboseLogs) Debug.Log("🔮 === MAGIC HIT ===");
     }
 
     /// <summary>
@@ -98,6 +99,7 @@ public class CameraEffects : MonoBehaviour
 
     private IEnumerator ShakeCamera(float duration, float intensity)
     {
+        if (mainCamera == null) yield break;
         if (isShaking) yield break;
 
         isShaking = true;

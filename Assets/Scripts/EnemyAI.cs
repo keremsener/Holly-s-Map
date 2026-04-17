@@ -24,6 +24,8 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private float maxChaseDistance = 15f;
     [SerializeField] private float combatRange = 1.5f;
     [SerializeField] private float stoppingDistance = 0.3f;
+    [SerializeField] private float loseSightGraceDuration = 1.25f;
+    [SerializeField] private LayerMask lineOfSightBlockers;
 
     [Header("═══ MOVEMENT SPEEDS ═══")]
     [SerializeField] private float patrolSpeed = 1.5f;
@@ -62,6 +64,9 @@ public class EnemyAI : MonoBehaviour
     private EnemyState currentState = EnemyState.Idle;
     private EnemyState previousState;
     private float stateTimer = 0f;
+    private float loseSightTimer = 0f;
+    private bool idleTauntTriggered = false;
+    private float nextDebugLogTime = 0f;
 
     // Combat
     private float lastAttackTime = 0f;
@@ -153,7 +158,7 @@ public class EnemyAI : MonoBehaviour
     private void UpdateIdle(float distanceToPlayer)
     {
         // Oyuncu menzile girdi mi?
-        if (distanceToPlayer < detectionRange)
+        if (distanceToPlayer < detectionRange && CanSeePlayer())
         {
             ChangeState(EnemyState.Chasing);
             return;
@@ -176,9 +181,10 @@ public class EnemyAI : MonoBehaviour
         {
             StopMovement();
             // Beklerken random göz kırpma veya taunt yap
-            if (stateTimer > patrolWaitTime * 0.7f && Random.value > 0.8f)
+            if (!idleTauntTriggered && stateTimer > patrolWaitTime * 0.7f && Random.value > 0.8f)
             {
                 animator.SetTrigger(hashTaunt);
+                idleTauntTriggered = true;
             }
         }
     }
@@ -200,7 +206,16 @@ public class EnemyAI : MonoBehaviour
         }
 
         // Oyuncu kaybedildi mi? → Eve dön
-        if (!CanSeePlayer() && stateTimer > 3f)
+        if (CanSeePlayer())
+        {
+            loseSightTimer = 0f;
+        }
+        else
+        {
+            loseSightTimer += Time.deltaTime;
+        }
+
+        if (loseSightTimer >= loseSightGraceDuration)
         {
             ChangeState(EnemyState.Returning);
             return;
@@ -294,7 +309,7 @@ public class EnemyAI : MonoBehaviour
             }
         }
 
-        yield return new WaitForSeconds(attackCooldown - attackWindupTime);
+        yield return new WaitForSeconds(Mathf.Max(0f, attackCooldown - attackWindupTime));
         isAttacking = false;
     }
 
@@ -304,7 +319,10 @@ public class EnemyAI : MonoBehaviour
         animator.SetTrigger(hashTakeDamage);
 
         // Küçük knockback
-        rb.linearVelocity = (transform.position - playerTransform.position).normalized * knockbackForce;
+        if (playerTransform != null)
+        {
+            rb.linearVelocity = (transform.position - playerTransform.position).normalized * knockbackForce;
+        }
 
         // Hasar alırken returning'e geç
         if (currentState != EnemyState.Returning)
@@ -323,7 +341,7 @@ public class EnemyAI : MonoBehaviour
         animator.SetBool(hashWalking, false);
         animator.SetTrigger(hashDying);
         rb.linearVelocity = Vector2.zero;
-        rb.isKinematic = true;
+        rb.bodyType = RigidbodyType2D.Kinematic;
         enabled = false;
         
         // Ölüm animasyonu
@@ -396,18 +414,20 @@ public class EnemyAI : MonoBehaviour
     {
         if (playerTransform == null) return false;
 
-        Vector2 directionToPlayer = (playerTransform.position - transform.position).normalized;
         float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
-
-        // Raycast ile oyuncuya doğru görüş kontrolü
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, directionToPlayer, distanceToPlayer);
-
-        if (hit.collider != null && hit.transform == playerTransform)
+        if (distanceToPlayer < detectionRange * 0.35f)
         {
             return true;
         }
 
-        return distanceToPlayer < detectionRange * 0.5f; // Çok yakınsa direkt görülebilir
+        if (lineOfSightBlockers.value == 0)
+        {
+            return true;
+        }
+
+        // Sadece engel katmanlarını test et: arada engel yoksa oyuncuyu görüyor.
+        RaycastHit2D obstacleHit = Physics2D.Linecast(transform.position, playerTransform.position, lineOfSightBlockers);
+        return obstacleHit.collider == null;
     }
 
     private void SetPatrolTarget()
@@ -423,6 +443,8 @@ public class EnemyAI : MonoBehaviour
         previousState = currentState;
         currentState = newState;
         stateTimer = 0f;
+        idleTauntTriggered = false;
+        loseSightTimer = 0f;
 
         OnStateChanged(newState);
     }
@@ -558,6 +580,13 @@ public class EnemyAI : MonoBehaviour
     {
         if (!showDebugInfo) return;
 
+        if (Time.time < nextDebugLogTime)
+        {
+            return;
+        }
+
+        nextDebugLogTime = Time.time + 0.5f;
+
         Debug.Log($"🤖 {gameObject.name} | State: {currentState} | HP: {currentHealth:F0}/{maxHealth} | " +
                   $"Dist to Player: {distanceToPlayer:F1} | Dist to Home: {distanceToHome:F1}");
     }
@@ -579,12 +608,4 @@ public class EnemyAI : MonoBehaviour
         Gizmos.DrawLine(homePosition, homePosition + Vector2.up * 0.5f);
     }
     #endregion
-}
-
-/// <summary>
-/// Interface for health system - Player'a implement et
-/// </summary>
-public interface IHealth
-{
-    void TakeDamage(float damage);
 }

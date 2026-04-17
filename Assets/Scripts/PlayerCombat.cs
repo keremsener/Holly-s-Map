@@ -31,6 +31,10 @@ public class PlayerCombat : MonoBehaviour
     [SerializeField] private AudioClip slashSFX;
     [SerializeField] private AudioClip magicSFX;
     [SerializeField] private AudioClip hitSFX;
+
+    [Header("═══ COMBAT FEEL ═══")]
+    [SerializeField] private float meleeHitStopDuration = 0.04f;
+    [SerializeField] private float meleeHitStopScale = 0.15f;
     #endregion
 
     #region Private Variables
@@ -42,6 +46,7 @@ public class PlayerCombat : MonoBehaviour
     private Camera mainCamera;
     
     private int hashAttackTrigger;
+    private Coroutine hitStopCoroutine;
     #endregion
 
     #region Lifecycle
@@ -112,6 +117,12 @@ public class PlayerCombat : MonoBehaviour
     #region Combat Methods
     private void MeleeAttack()
     {
+        if (meleePoint == null)
+        {
+            Debug.LogWarning("⚠️ Melee Point missing, melee attack skipped.");
+            return;
+        }
+
         if (animator != null)
         {
             animator.SetTrigger(hashAttackTrigger);
@@ -145,6 +156,13 @@ public class PlayerCombat : MonoBehaviour
                 {
                     CameraEffects.Instance.MeleeHitEffect();
                 }
+
+                if (hitStopCoroutine != null)
+                {
+                    StopCoroutine(hitStopCoroutine);
+                }
+
+                hitStopCoroutine = StartCoroutine(DoHitStop());
             }
 
             // Apply knockback
@@ -172,6 +190,12 @@ public class PlayerCombat : MonoBehaviour
 
     private void ShootMagic()
     {
+        if (firePoint == null)
+        {
+            Debug.LogWarning("⚠️ Fire Point missing, magic attack skipped.");
+            return;
+        }
+
         if (animator != null)
         {
             animator.SetTrigger(hashAttackTrigger);
@@ -183,6 +207,11 @@ public class PlayerCombat : MonoBehaviour
         }
 
         PlayAudio(magicSFX);
+
+        if (CameraEffects.Instance != null)
+        {
+            CameraEffects.Instance.MagicHitEffect();
+        }
     }
     #endregion
 
@@ -191,9 +220,18 @@ public class PlayerCombat : MonoBehaviour
     {
         isRecharging = true;
         yield return new WaitForSeconds(manaRechargeTime);
-        currentMagicCharges++;
+        currentMagicCharges = Mathf.Min(maxMagicCharges, currentMagicCharges + 1);
         Debug.Log($"🔄 Mana Yenilendi! {currentMagicCharges}/{maxMagicCharges}");
         isRecharging = false;
+    }
+
+    private IEnumerator DoHitStop()
+    {
+        float originalTimeScale = Time.timeScale;
+        Time.timeScale = meleeHitStopScale;
+        yield return new WaitForSecondsRealtime(meleeHitStopDuration);
+        Time.timeScale = originalTimeScale;
+        hitStopCoroutine = null;
     }
     #endregion
 
