@@ -62,6 +62,13 @@ public class PlatformGuardian : MonoBehaviour
         if (field != null) field.SetValue(ai, value);
     }
 
+    /// <summary>GameManager tarafindan cagrilir: pozisyon kilidini gunceller.</summary>
+    public void ResetLockPosition(Vector3 newPos)
+    {
+        lockedPosition = newPos;
+        transform.position = newPos;
+    }
+
     private void OnDrawGizmos()
     {
         Gizmos.color = new Color(1f, 0f, 0f, 0.5f);

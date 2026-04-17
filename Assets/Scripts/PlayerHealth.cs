@@ -18,6 +18,10 @@ public class PlayerHealth : MonoBehaviour, IHealth
     [Header("Respawn")]
     [SerializeField] private float respawnDelay = 1.5f;          // Ölüm → respawn arası süre
 
+    [Header("Düşme Ölümü")]
+    [Tooltip("Bu Y değerinin altına düşen oyuncu anında ölür (haritaya göre ayarla)")]
+    [SerializeField] private float fallDeathY = -9f;
+
     // Bileşenler
     private Rigidbody2D rb;
     private Animator animator;
@@ -65,6 +69,16 @@ public class PlayerHealth : MonoBehaviour, IHealth
             checkpointPosition = transform.position;   // Sahne başlangıç noktası = ilk checkpoint
     }
 
+    private void Update()
+    {
+        // Oyuncu haritanın altına düştüyse anında öldür
+        if (!isDead && transform.position.y < fallDeathY)
+        {
+            Debug.Log($"🕳️ Oyuncu uçurumdan düştü! (Y={transform.position.y:F1} < {fallDeathY})");
+            Die();
+        }
+    }
+
     // ─────────────────────────────────────────────────────────────
     //  IHealth IMPLEMENTATION
     // ─────────────────────────────────────────────────────────────
@@ -108,6 +122,10 @@ public class PlayerHealth : MonoBehaviour, IHealth
         isDead = true;
 
         Debug.Log("💀 Oyuncu öldü! Respawn bekleniyor...");
+
+        // Tüm düşmanları sıfırla
+        if (GameManager.Instance != null)
+            GameManager.Instance.OnPlayerDied();
 
         // Hareketi durdur
         if (rb != null)

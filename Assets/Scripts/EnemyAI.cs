@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 
 /// <summary>
@@ -623,6 +623,40 @@ public class EnemyAI : MonoBehaviour
         // Home position
         Gizmos.color = Color.blue;
         Gizmos.DrawLine(homePosition, homePosition + Vector2.up * 0.5f);
-    }
+        }
     #endregion
+
+    public void ResetToHome(Vector3 newHome)
+    {
+        transform.position = newHome;
+        homePosition       = newHome;
+        StopAllCoroutines();
+        currentHealth      = maxHealth;
+        previousState      = EnemyState.Idle;
+        currentState       = EnemyState.Idle;
+        stateTimer         = 0f;
+        loseSightTimer     = 0f;
+        isAttacking        = false;
+        speedMultiplier    = 1f;
+        moveDirection      = Vector2.zero;
+        lastAttackTime     = 0f;
+        idleTauntTriggered = false;
+        if (rb != null)
+        {
+            rb.linearVelocity  = Vector2.zero;
+            rb.angularVelocity = 0f;
+            if (rb.bodyType == RigidbodyType2D.Kinematic)
+                rb.bodyType = RigidbodyType2D.Dynamic;
+        }
+        if (spriteRenderer != null) spriteRenderer.color = idleColor;
+        bool shouldFaceRight = (playerTransform == null) || (playerTransform.position.x > newHome.x);
+        Vector3 sc = transform.localScale;
+        sc.x = Mathf.Abs(sc.x) * (shouldFaceRight ? 1f : -1f);
+        transform.localScale = sc;
+        isFacingRight = shouldFaceRight;
+        if (playerTransform == null) { var pg = GameObject.FindGameObjectWithTag("Player"); if (pg != null) playerTransform = pg.transform; }
+        if (animator != null) { animator.Rebind(); animator.Update(0f); animator.SetBool(hashWalking, false); }
+        SetPatrolTarget();
+        if (gameObject.activeInHierarchy) OnStateChanged(EnemyState.Idle);
+    }
 }
