@@ -38,6 +38,7 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private float attackWindupTime = 0.3f;
     [SerializeField] private float maxHealth = 100f;
     [SerializeField] private float knockbackForce = 5f;
+    [SerializeField] private bool isInstaKillOnContact = true; // Aggressive mode: Kills player on touch
 
     [Header("═══ PATROL SETTINGS ═══")]
     [SerializeField] private float patrolRadius = 5f;
@@ -352,6 +353,22 @@ public class EnemyAI : MonoBehaviour
     {
         yield return new WaitForSeconds(2f);
         Destroy(gameObject);
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (isInstaKillOnContact && enabled)
+        {
+            if (collision.gameObject.CompareTag("Player"))
+            {
+                var playerHealth = collision.gameObject.GetComponent<IHealth>();
+                if (playerHealth != null)
+                {
+                    Debug.Log($"💀 {gameObject.name} (Aggressive Enemy) oyuncuya dokundu ve anında öldürdü!");
+                    playerHealth.TakeDamage(9999f); // Instakill
+                }
+            }
+        }
     }
     #endregion
 

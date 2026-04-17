@@ -159,11 +159,30 @@ public class EnemyHealth : MonoBehaviour, IHealth
 
     private IEnumerator DamageFlash()
     {
-        if (spriteRenderer == null) yield break;
+        // Bulunan tüm sprite'ları kızart (Skeletal animation'lar için root'ta değil child'larda olabilir)
+        SpriteRenderer[] renderers = GetComponentsInChildren<SpriteRenderer>();
+        Color[] origColors = new Color[renderers.Length];
+        
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            origColors[i] = renderers[i].color;
+            renderers[i].color = damageFlashColor;
+        }
 
-        spriteRenderer.color = damageFlashColor;
+        // Vuruş hissi (Squash and Stretch) için anlık esneme
+        Vector3 origScale = transform.localScale;
+        transform.localScale = new Vector3(origScale.x * 1.1f, origScale.y * 0.9f, origScale.z);
+
         yield return new WaitForSeconds(flashDuration);
-        spriteRenderer.color = originalColor;
+
+        // Eski haline geri döndür
+        transform.localScale = origScale;
+        
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (renderers[i] != null)
+                renderers[i].color = origColors[i];
+        }
     }
 
     /// <summary>
@@ -221,6 +240,32 @@ public class EnemyHealth : MonoBehaviour, IHealth
         Transform limbToRemove = activeLimbs[Random.Range(0, activeLimbs.Count)];
         string limbType = limbToRemove.name.ToLower();
         
+        // --- Spawn detached physics limb ---
+        SpriteRenderer limbSpriteRenderer = limbToRemove.GetComponent<SpriteRenderer>();
+        if (limbSpriteRenderer != null && limbSpriteRenderer.sprite != null)
+        {
+            GameObject detachedLimb = new GameObject("Detached_" + limbToRemove.name);
+            detachedLimb.transform.position = limbToRemove.position;
+            detachedLimb.transform.rotation = limbToRemove.rotation;
+            detachedLimb.transform.localScale = limbToRemove.lossyScale;
+
+            SpriteRenderer sr = detachedLimb.AddComponent<SpriteRenderer>();
+            sr.sprite = limbSpriteRenderer.sprite;
+            sr.sortingLayerID = limbSpriteRenderer.sortingLayerID;
+            sr.sortingOrder = limbSpriteRenderer.sortingOrder;
+            sr.color = limbSpriteRenderer.color;
+
+            Rigidbody2D limbRb = detachedLimb.AddComponent<Rigidbody2D>();
+            limbRb.mass = 0.5f;
+            Vector2 dropForce = new Vector2(Random.Range(-5f, 5f), Random.Range(3f, 8f));
+            limbRb.AddForce(dropForce, ForceMode2D.Impulse);
+            limbRb.AddTorque(Random.Range(-100f, 100f));
+
+            detachedLimb.AddComponent<PolygonCollider2D>();
+            Destroy(detachedLimb, 5f); // 5 saniye sonra yok et
+        }
+        // -----------------------------------
+
         // Disable it
         limbToRemove.gameObject.SetActive(false);
         limbsLost++;
