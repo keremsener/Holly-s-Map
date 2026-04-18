@@ -220,8 +220,6 @@ public class EnemyHealth : MonoBehaviour, IHealth
         if (sr == null) return;
         // Sprite'ı tamamen şeffaf yap — SetActive yapmıyoruz
         var c = sr.color; c.a = 0f; sr.color = c;
-        // Ek güvenlik: sprite'ı null yap
-        sr.sprite = null;
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -289,7 +287,7 @@ public class EnemyHealth : MonoBehaviour, IHealth
         // Orijinal gövdeyi hemen gizle
         foreach (var sr in allSRs)
         {
-            if (sr != null) { var c = sr.color; c.a = 0f; sr.color = c; sr.sprite = null; }
+            if (sr != null) { var c = sr.color; c.a = 0f; sr.color = c; }
         }
 
         if (destroyOnDeath) gameObject.SetActive(false);
@@ -389,10 +387,18 @@ public class EnemyHealth : MonoBehaviour, IHealth
         // Tüm sprite'ları geri getir
         if (animator != null) { animator.enabled = true; animator.Rebind(); }
 
-        // Root sprite rengini sıfırla
+        // Root sprite rengini ve alpha değerlerini sıfırla
         var srs = GetComponentsInChildren<SpriteRenderer>();
         foreach (var sr in srs)
-            if (sr != null) { var c = sr.color; c.a = 1f; sr.color = c; }
+        {
+            if (sr != null) 
+            { 
+                sr.color = (sr == rootSR) ? originalColor : Color.white; 
+            }
+        }
+        
+        // Obje kapalıysa aç
+        if (!gameObject.activeSelf) gameObject.SetActive(true);
 
         Debug.Log($"♻️ {gameObject.name} sıfırlandı.");
     }
