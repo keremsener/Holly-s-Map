@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 /// <summary>
@@ -20,10 +20,10 @@ public class EnemyAI : MonoBehaviour
 
     #region Inspector Settings
     [Header("═══ DETECTION & RANGE ═══")]
-    [SerializeField] private float detectionRange = 10f;
-    [SerializeField] private float maxChaseDistance = 15f;
-    [SerializeField] private float combatRange = 1.5f;
-    [SerializeField] private float stoppingDistance = 0.3f;
+    [SerializeField] private float detectionRange = 15f;
+    [SerializeField] private float maxChaseDistance = 25f;
+    [SerializeField] private float combatRange = 2f;
+    [SerializeField] private float stoppingDistance = 0.5f;
     [SerializeField] private float loseSightGraceDuration = 1.25f;
     [SerializeField] private LayerMask lineOfSightBlockers;
 
@@ -48,6 +48,11 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private Color alertColor = Color.red;
     [SerializeField] private Color idleColor = Color.white;
     [SerializeField] private bool showDebugInfo = true;
+
+    [Header("═══ LEDGE AVOIDANCE ═══")]
+    [SerializeField] private bool avoidLedges = true;
+    [SerializeField] private float ledgeDetectionDistance = 1.5f;
+    [SerializeField] private LayerMask groundLayer;
     #endregion
 
     #region Private Variables
@@ -382,6 +387,45 @@ public class EnemyAI : MonoBehaviour
             FaceTarget(target);
         }
 
+        // Check for ledges
+        if (avoidLedges)
+        {
+            // Mümkünse Ground katmanını kullan, yoksa her şeye çarp
+            int mask = groundLayer.value == 0 ? ~0 : groundLayer.value;
+            
+            // Cast a ray slightly ahead and down to see if there is ground
+            Vector2 checkOrigin = (Vector2)transform.position + new Vector2(isFacingRight ? 0.5f : -0.5f, 0);
+            
+            RaycastHit2D[] hits = Physics2D.RaycastAll(checkOrigin, Vector2.down, ledgeDetectionDistance, mask);
+            bool foundGround = false;
+            foreach (var hit in hits)
+            {
+                if (hit.collider != null && !hit.collider.isTrigger && hit.collider.gameObject != this.gameObject)
+                {
+                    foundGround = true;
+                    break;
+                }
+            }
+            
+            // If there's no ground ahead, stop moving forward
+            if (!foundGround)
+            {
+                if (currentState == EnemyState.Chasing)
+                {
+                    // Can't chase further due to ledge
+                    StopMovement();
+                    return;
+                }
+                else if (currentState == EnemyState.Idle || currentState == EnemyState.Returning)
+                {
+                    // Pick a new target
+                    SetPatrolTarget();
+                    StopMovement();
+                    return;
+                }
+            }
+        }
+
         // Bacak kopunca hız düşsün
         float finalSpeed = speed * speedMultiplier;
         rb.linearVelocity = new Vector2(moveDirection.x * finalSpeed, rb.linearVelocity.y);
@@ -623,6 +667,14 @@ public class EnemyAI : MonoBehaviour
         // Home position
         Gizmos.color = Color.blue;
         Gizmos.DrawLine(homePosition, homePosition + Vector2.up * 0.5f);
+
+        // Ledge detection
+        if (avoidLedges)
+        {
+            Gizmos.color = Color.yellow;
+            Vector2 checkOrigin = (Vector2)transform.position + new Vector2(isFacingRight ? 0.5f : -0.5f, 0);
+            Gizmos.DrawLine(checkOrigin, checkOrigin + Vector2.down * ledgeDetectionDistance);
+        }
         }
     #endregion
 
