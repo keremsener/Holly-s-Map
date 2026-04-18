@@ -73,8 +73,8 @@ public class PuzzleBoxSpawner : MonoBehaviour
                 // A friction material would be nice so it slides nicely when pushed
             }
 
-            // Box needs to be on Ground layer or default so player can jump on it
-            box.layer = LayerMask.NameToLayer("Default");
+            // Box needs to be on Ground layer so player can jump on it
+            box.layer = LayerMask.NameToLayer("Ground");
         }
 
         if (spawnSound != null)
