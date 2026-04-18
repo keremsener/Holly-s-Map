@@ -14,6 +14,7 @@ public class PlayerHealth : MonoBehaviour, IHealth
     [Header("Hasar Geri Bildirimi")]
     [SerializeField] private float invincibilityDuration = 1f;   // Hasar sonrası geçici dokunulmazlık
     [SerializeField] private float deathFadeTime = 0.6f;         // Ölüm fade süresi
+    [SerializeField] private AudioClip deathSound;
 
     [Header("Respawn")]
     [SerializeField] private float respawnDelay = 1.5f;          // Ölüm → respawn arası süre
@@ -143,6 +144,11 @@ public class PlayerHealth : MonoBehaviour, IHealth
         {
             bool hasDeath = HasAnimatorParam(hashDie);
             if (hasDeath) animator.SetTrigger(hashDie);
+        }
+
+        if (deathSound != null && Camera.main != null)
+        {
+            AudioSource.PlayClipAtPoint(deathSound, Camera.main.transform.position, 1f);
         }
 
         StartCoroutine(DeathAndRespawn());

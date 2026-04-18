@@ -13993,7 +13993,7 @@ MonoBehaviour:
   - {fileID: 716376682}
   pushableBoxPrefab: {fileID: 210474394749548811, guid: 4e67201cf9cffce4684cff4ec4ee1b67, type: 3}
   spawnPoint: {fileID: 1155065559}
-  spawnSound: {fileID: 0}
+  spawnSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   spawnVFX: {fileID: 0}
 --- !u!1 &412872662
 GameObject:
@@ -26495,7 +26495,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   walkSpeed: 4
   runSpeed: 8
-  jumpForce: 18
+  jumpForce: 14
   whatIsGround:
     serializedVersion: 2
     m_Bits: 64
@@ -26575,6 +26575,7 @@ MonoBehaviour:
   currentHealth: 0
   invincibilityDuration: 1
   deathFadeTime: 0.6
+  deathSound: {fileID: 8300000, guid: 3d87f05f661055d49912cfc88e53c88b, type: 3}
   respawnDelay: 1.5
   fallDeathY: -9
 --- !u!82 &1811549132
