@@ -30,9 +30,9 @@ public class PlayerCombat : MonoBehaviour
     [SerializeField] private GameObject impactVFXPrefab;
 
     [Header("═══ SFX ═══")]
-    [SerializeField] private AudioClip slashSFX;
-    [SerializeField] private AudioClip magicSFX;
-    [SerializeField] private AudioClip hitSFX;
+    [SerializeField] private AudioClip slashSFX;           // Kılıç sallanma sesi (her vuruşta)
+    [SerializeField] private AudioClip swordHitSFX;        // Assets/SFX/sword_hit.mp3 — düşmana isabet
+    [SerializeField] private AudioClip fireMagicSFX;       // Assets/SFX/fire_magic.mp3 — büyü atışı
 
     [Header("═══ COMBAT FEEL ═══")]
     [Tooltip("Vuruş anındaki time-scale duraklama süresi (saniye, realtime)")]
@@ -52,12 +52,20 @@ public class PlayerCombat : MonoBehaviour
     private bool isRecharging = false;
     private float lastAttackTime = -999f;
     private Camera mainCamera;
+    private float rechargeStartTime = -1f;  // En son şarj başlangıcı
 
     // Animator hash
     private int hashAttack;
 
     // Hit stop
     private Coroutine hitStopCoroutine;
+
+    // ─── Magic HUD için public API ───
+    public int   CurrentMagicCharges => currentMagicCharges;
+    public int   MaxMagicCharges     => maxMagicCharges;
+    public float ManaRechargeTime    => manaRechargeTime;
+    /// <summary>Sonraki şarjın tamamlanacağı Time.time değeri. Doluysa -1 döner.</summary>
+    public float NextChargeReadyTime => isRecharging ? rechargeStartTime + manaRechargeTime : -1f;
 
     // Procedural kan için renkler
     private static readonly Color32[] bloodColors = {
@@ -159,6 +167,9 @@ public class PlayerCombat : MonoBehaviour
                 health.TakeDamage(meleeDamage);
                 hitAnEnemy = true;
 
+                // Kılıç isabet SFX (sword_hit.mp3)
+                PlayAudio(swordHitSFX);
+
                 // Kamera efekti
                 if (CameraEffects.Instance != null)
                     CameraEffects.Instance.MeleeHitEffect();
@@ -178,9 +189,6 @@ public class PlayerCombat : MonoBehaviour
                 rb.linearVelocity = Vector2.zero;
                 rb.AddForce(kbDir * meleeKnockback, ForceMode2D.Impulse);
             }
-
-            // Hit SFX
-            PlayAudio(hitSFX);
         }
 
         // Boşluğa vurursa hafif kamera sarsıntısı yok (sadece hit'te olsun)
@@ -195,7 +203,8 @@ public class PlayerCombat : MonoBehaviour
         if (magicPrefab != null)
             Instantiate(magicPrefab, firePoint.position, firePoint.rotation);
 
-        PlayAudio(magicSFX);
+        // Büyü atış SFX (fire_magic.mp3)
+        PlayAudio(fireMagicSFX);
 
         if (CameraEffects.Instance != null)
             CameraEffects.Instance.MagicHitEffect();
@@ -292,6 +301,7 @@ public class PlayerCombat : MonoBehaviour
     private IEnumerator RechargeMana()
     {
         isRecharging = true;
+        rechargeStartTime = Time.time;
         yield return new WaitForSeconds(manaRechargeTime);
         currentMagicCharges = Mathf.Min(maxMagicCharges, currentMagicCharges + 1);
         isRecharging = false;

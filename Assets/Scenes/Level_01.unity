@@ -591,7 +591,6 @@ GameObject:
   - component: {fileID: 239674609}
   - component: {fileID: 239674608}
   - component: {fileID: 239674612}
-  - component: {fileID: 239674611}
   - component: {fileID: 239674613}
   m_Layer: 6
   m_Name: Tilemap
@@ -6243,51 +6242,6 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
---- !u!66 &239674611
-CompositeCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 239674606}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_GeometryType: 0
-  m_GenerationType: 0
-  m_EdgeRadius: 0
-  m_ColliderPaths: []
-  m_CompositePaths:
-    m_Paths: []
-  m_VertexDistance: 0.0005
-  m_OffsetDistance: 0.00005
-  m_UseDelaunayMesh: 0
-  m_CompositeGameObject: {fileID: 239674606}
 --- !u!50 &239674612
 Rigidbody2D:
   serializedVersion: 5
@@ -6296,7 +6250,7 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 239674606}
-  m_BodyType: 2
+  m_BodyType: 1
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
@@ -17281,6 +17235,7 @@ GameObject:
   m_Component:
   - component: {fileID: 977895241}
   - component: {fileID: 977895240}
+  - component: {fileID: 977895242}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -17316,6 +17271,29 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &977895242
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 977895239}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d5acfea6806f9f4da4c474b62f3b8b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MagicHUD
+  playerCombat: {fileID: 0}
+  panelWidth: 220
+  panelHeight: 110
+  marginRight: 18
+  marginTop: 18
+  colorCharged: {r: 0.45, g: 0.15, b: 0.9, a: 1}
+  colorEmpty: {r: 0.18, g: 0.06, b: 0.35, a: 1}
+  colorRecharging: {r: 0.65, g: 0.3, b: 0.95, a: 1}
+  colorBar: {r: 0.55, g: 0.2, b: 0.95, a: 1}
+  colorGold: {r: 1, g: 0.82, b: 0.25, a: 1}
+  colorBg: {r: 0.05, g: 0.02, b: 0.12, a: 0.88}
 --- !u!1 &1011161323
 GameObject:
   m_ObjectHideFlags: 0
@@ -17484,8 +17462,8 @@ Transform:
   m_GameObject: {fileID: 1118538909}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 50.16, y: -5.44, z: 0}
-  m_LocalScale: {x: 1.9398438, y: 0.296875, z: 1}
+  m_LocalPosition: {x: 50.05, y: -5.463, z: 0}
+  m_LocalScale: {x: 0.826525, y: 0.2857422, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -18301,7 +18279,7 @@ Transform:
   m_GameObject: {fileID: 1811549123}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.25443, y: 0.934, z: 0}
+  m_LocalPosition: {x: 0.13, y: 0.58, z: 0}
   m_LocalScale: {x: 0.3, y: 0.3, z: 0.6}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -18325,7 +18303,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
-  m_GravityScale: 3.5
+  m_GravityScale: 4.5
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -18388,7 +18366,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   walkSpeed: 4
   runSpeed: 8
-  jumpForce: 11
+  jumpForce: 18
   whatIsGround:
     serializedVersion: 2
     m_Bits: 64
@@ -18446,8 +18424,8 @@ MonoBehaviour:
   bloodBurstPrefab: {fileID: 8782009059513614302, guid: 171dda363e9efd94ca9bc63e38ca9658, type: 3}
   impactVFXPrefab: {fileID: 3042519775331041172, guid: 841004c4c6a39e244abe2257394de913, type: 3}
   slashSFX: {fileID: 0}
-  magicSFX: {fileID: 0}
-  hitSFX: {fileID: 0}
+  swordHitSFX: {fileID: 8300000, guid: d34a9f710f66d664caec5c76f32240a1, type: 3}
+  fireMagicSFX: {fileID: 8300000, guid: e3dcc051cd445694da9580c4911d5431, type: 3}
   hitStopDuration: 0.06
   hitStopScale: 0.05
   hitShakeMagnitude: 0.12
