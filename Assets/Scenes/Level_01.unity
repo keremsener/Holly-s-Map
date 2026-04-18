@@ -6902,15 +6902,9 @@ MonoBehaviour:
   deathVFXPrefab: {fileID: 0}
   damageSFX: {fileID: 0}
   deathSFX: {fileID: 0}
-  enableLimbDismemberment: 1
-  dismembermentChancePerHit: 1
-  maxLimbsToLose: 4
   limbLossedSFX: {fileID: 0}
-  manualLimbParts:
-  - {fileID: 1997158015}
-  - {fileID: 746461621}
-  - {fileID: 1609838013}
-  - {fileID: 674564741}
+  dismemberChance: 0.45
+  maxDismemberments: 4
 --- !u!114 &478230440
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7236,16 +7230,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &674564741 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 6873823480411717103, guid: f599d76226aa16e4b87e507fa32dd4b8, type: 3}
-  m_PrefabInstance: {fileID: 478230430}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &746461621 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5317933018194679475, guid: f599d76226aa16e4b87e507fa32dd4b8, type: 3}
-  m_PrefabInstance: {fileID: 478230430}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &786562099
 GameObject:
   m_ObjectHideFlags: 0
@@ -17165,15 +17149,9 @@ MonoBehaviour:
   deathVFXPrefab: {fileID: 0}
   damageSFX: {fileID: 0}
   deathSFX: {fileID: 0}
-  enableLimbDismemberment: 1
-  dismembermentChancePerHit: 1
-  maxLimbsToLose: 4
   limbLossedSFX: {fileID: 0}
-  manualLimbParts:
-  - {fileID: 2065764223}
-  - {fileID: 1757888536}
-  - {fileID: 1879060074}
-  - {fileID: 380136245}
+  dismemberChance: 0.45
+  maxDismemberments: 4
 --- !u!50 &912714087
 Rigidbody2D:
   serializedVersion: 5
@@ -17844,11 +17822,6 @@ Transform:
   - {fileID: 239674607}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &1609838013 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5830217076046610760, guid: f599d76226aa16e4b87e507fa32dd4b8, type: 3}
-  m_PrefabInstance: {fileID: 478230430}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1612775920
 GameObject:
   m_ObjectHideFlags: 0
@@ -19040,11 +19013,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!4 &1997158015 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5267648612279349880, guid: f599d76226aa16e4b87e507fa32dd4b8, type: 3}
-  m_PrefabInstance: {fileID: 478230430}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2065764222
 GameObject:
   m_ObjectHideFlags: 0
