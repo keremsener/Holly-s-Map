@@ -12,6 +12,9 @@ public class Checkpoint : MonoBehaviour
     [SerializeField] private SpriteRenderer flagSprite;
     [SerializeField] private Color inactiveColor = new Color(1f, 1f, 1f, 0.4f);
     [SerializeField] private Color activeColor   = Color.yellow;
+    
+    [Header("Ses")]
+    [SerializeField] private AudioClip successSound;
 
     private bool activated = false;
 
@@ -38,6 +41,9 @@ public class Checkpoint : MonoBehaviour
 
         if (flagSprite != null)
             flagSprite.color = activeColor;
+
+        if (successSound != null)
+            AudioSource.PlayClipAtPoint(successSound, transform.position);
 
         Debug.Log($"📍 Checkpoint aktif: {transform.position}");
     }
