@@ -6,7 +6,7 @@ using System.Collections;
 /// </summary>
 public class CaveManager : MonoBehaviour
 {
-    private static CaveManager _instance;
+    public static CaveManager Instance { get; private set; }
     private float targetAlpha = 0f;
     private float currentAlpha = 0f;
     public float fadeSpeed = 1.5f;
@@ -15,7 +15,7 @@ public class CaveManager : MonoBehaviour
     
     private void Awake()
     {
-        if (_instance == null) _instance = this;
+        if (Instance == null) Instance = this;
     }
     
     private void Start()
@@ -61,6 +61,11 @@ public class CaveManager : MonoBehaviour
         {
             targetAlpha = 0f; // Mağaradan çıkınca aydınlık
         }
+    }
+
+    public void ClearDarkness()
+    {
+        targetAlpha = 0f;
     }
     
     private void OnGUI()

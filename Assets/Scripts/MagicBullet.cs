@@ -80,11 +80,17 @@ public class MagicBullet : MonoBehaviour
         else if (collision.GetComponent<SecretWall>() != null)
         {
             collision.GetComponent<SecretWall>().OnHitByMagic();
-            
-            // Çarpışma efekti ve yok olma
             hasHit = true;
             if (impactVFXPrefab != null) Instantiate(impactVFXPrefab, transform.position, Quaternion.identity);
             if (hitSFX != null && audioSource != null) audioSource.PlayOneShot(hitSFX);
+            Destroy(gameObject, 0.1f);
+        }
+        // Sihirli meşale mi?
+        else if (collision.GetComponent<MagicTorch>() != null)
+        {
+            collision.GetComponent<MagicTorch>().Ignite();
+            hasHit = true;
+            if (impactVFXPrefab != null) Instantiate(impactVFXPrefab, transform.position, Quaternion.identity);
             Destroy(gameObject, 0.1f);
         }
     }
