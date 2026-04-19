@@ -76,6 +76,17 @@ public class MagicBullet : MonoBehaviour
         {
             OnEnemyHit(collision);
         }
+        // Gizli duvar mı kontrol et
+        else if (collision.GetComponent<SecretWall>() != null)
+        {
+            collision.GetComponent<SecretWall>().OnHitByMagic();
+            
+            // Çarpışma efekti ve yok olma
+            hasHit = true;
+            if (impactVFXPrefab != null) Instantiate(impactVFXPrefab, transform.position, Quaternion.identity);
+            if (hitSFX != null && audioSource != null) audioSource.PlayOneShot(hitSFX);
+            Destroy(gameObject, 0.1f);
+        }
     }
 
     private void OnEnemyHit(Collider2D enemyCollider)
