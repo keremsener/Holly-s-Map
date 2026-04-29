@@ -13,13 +13,15 @@ public class CoinManager : MonoBehaviour
 
     // ── Ayarlar ────────────────────────────────────────────────
     [Header("Coin Hedefi")]
-    [Tooltip("Bölümü tamamlamak için gereken toplam coin sayısı")]
+    [Tooltip("Bolumu tamamlamak icin gereken toplam coin sayisi")]
     public int totalCoins = 20;
 
     [Header("Sahneler")]
-    [Tooltip("Oyun bitince hangi sahne yüklensin? (Build Settings'e ekli olmalı)")]
-    public string mainMenuScene = "MainMenu";
-    public string levelScene    = "Level_01";
+    public string levelSelectScene = "LevelSelect";
+    public string levelScene       = "Level_01";
+
+    [Header("Bu kacinci bolum? (0'dan baslar)")]
+    public int levelIndex = 0;
 
     // ── Durum ──────────────────────────────────────────────────
     private int collected = 0;
@@ -61,7 +63,7 @@ public class CoinManager : MonoBehaviour
         {
             Debug.Log("🏆 Tüm coinler toplandı! Bölüm tamamlandı!");
             OnLevelComplete?.Invoke();
-            StartCoroutine(GoToMainMenu());
+            StartCoroutine(GoToLevelSelect());
         }
         else
         {
@@ -81,10 +83,17 @@ public class CoinManager : MonoBehaviour
     }
 
     // ── Coroutines ─────────────────────────────────────────────
-    private IEnumerator GoToMainMenu()
+    private IEnumerator GoToLevelSelect()
     {
+        // Ilerlemeyi kaydet ve bir sonraki bolumu ac
+        if (GameProgress.Instance != null)
+        {
+            GameProgress.Instance.CompleteLevel(levelIndex);
+            // Yeni acilan bolumu LevelSelect'e bildir
+            LevelSelectManager.PendingUnlockIndex = levelIndex + 1;
+        }
         yield return new WaitForSeconds(1.5f);
-        SceneManager.LoadScene(mainMenuScene);
+        UnityEngine.SceneManagement.SceneManager.LoadScene(levelSelectScene);
     }
 
     private IEnumerator RestartLevel()
