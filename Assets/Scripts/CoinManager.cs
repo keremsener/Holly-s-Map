@@ -41,6 +41,21 @@ public class CoinManager : MonoBehaviour
         Instance = this;
     }
 
+    private void Update()
+    {
+        // HILE KODU: Ctrl + B -> Aninda hedef coin sayisina (orn: 20) ulastirir
+        if (Input.GetKeyDown(KeyCode.B) && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+        {
+            if (collected < totalCoins)
+            {
+                collected = totalCoins;
+                Debug.Log("🔥 HILE AKTIF: Bolum tamamlama kosulu saglandi!");
+                OnCoinCollected?.Invoke(collected, totalCoins);
+                HintDisplay.Instance?.Show("Hile Aktif!", "Tum coinler eklendi", Color.yellow, 22, 1.5f, 0.2f, 0.5f);
+            }
+        }
+    }
+
     // ── Public API ─────────────────────────────────────────────
 
     /// <summary>Bir coin toplandığında çağrılır.</summary>
@@ -85,6 +100,14 @@ public class CoinManager : MonoBehaviour
     // ── Coroutines ─────────────────────────────────────────────
     private IEnumerator GoToLevelSelect()
     {
+        // Eger oyuna direkt bu sahneden (ornek: Istanbul) Play'e basarak girildiyse
+        // GameProgress henuz yaratilmamis olabilir. Yoksa aninda yaratalim!
+        if (GameProgress.Instance == null)
+        {
+            var go = new GameObject("GameProgress");
+            go.AddComponent<GameProgress>();
+        }
+
         // Ilerlemeyi kaydet ve bir sonraki bolumu ac
         if (GameProgress.Instance != null)
         {
@@ -92,6 +115,7 @@ public class CoinManager : MonoBehaviour
             // Yeni acilan bolumu LevelSelect'e bildir
             LevelSelectManager.PendingUnlockIndex = levelIndex + 1;
         }
+        
         yield return new WaitForSeconds(1.5f);
         UnityEngine.SceneManagement.SceneManager.LoadScene(levelSelectScene);
     }

@@ -55,8 +55,12 @@ public class RebuildIstanbul : EditorWindow
         Debug.Log("Istanbul sahnesi basariyla olusturuldu!");
     }
 
+    static GameObject spikeTemplate;
+
     static void CleanUpOldLevel()
     {
+        if (spikeTemplate != null) { Object.DestroyImmediate(spikeTemplate); spikeTemplate = null; }
+
         // Temizlenecek eski objelerin listesi (Enemy, Bouncer, SpikeZone, Coin, vb.)
         string[] tagsToDestroy = { "Enemy", "Coin", "Spike", "Checkpoint", "Bouncer", "MovingPlatform", "MagicTorch", "PressurePlate", "Gate", "HintZone", "LevelEnd" };
         
@@ -70,6 +74,13 @@ public class RebuildIstanbul : EditorWindow
                 go.name.Contains("MagicTorch") || go.name.Contains("PressurePlate") || go.name.Contains("ArenaGate") ||
                 go.name.Contains("HintZone") || go.name.Contains("LevelEnd") || go.name.Contains("CaveManager"))
             {
+                if (go.name.Contains("Spike") && spikeTemplate == null)
+                {
+                    spikeTemplate = Object.Instantiate(go);
+                    spikeTemplate.name = "SpikeTemplate_DO_NOT_DELETE";
+                    spikeTemplate.SetActive(false);
+                }
+
                 Object.DestroyImmediate(go);
             }
         }
@@ -107,10 +118,10 @@ public class RebuildIstanbul : EditorWindow
         // --- BOLGE 5: Bouncer Zinciri (x: 160 to 200) ---
         PaintRect(tm, tile, 160, 165, floorY - 5, floorY); // Atlayis noktasi
         // Bouncer adaciklari birbirine cok daha yakin
-        PaintRect(tm, tile, 169, 171, floorY - 10, floorY - 8);
-        PaintRect(tm, tile, 175, 177, floorY - 5, floorY - 3);
-        PaintRect(tm, tile, 181, 183, floorY, floorY + 2);
-        PaintRect(tm, tile, 187, 210, floorY - 5, floorY); // Inis
+        PaintRect(tm, tile, 168, 170, floorY - 10, floorY - 8);
+        PaintRect(tm, tile, 173, 175, floorY - 5, floorY - 3);
+        PaintRect(tm, tile, 178, 180, floorY, floorY + 2);
+        PaintRect(tm, tile, 183, 210, floorY - 5, floorY); // Inis
 
         // --- BOLGE 6: Kapi Puzzle ve Kosu (x: 210 to 260) ---
         PaintRect(tm, tile, 210, 260, floorY - 5, floorY);
@@ -169,9 +180,9 @@ public class RebuildIstanbul : EditorWindow
         SpawnSecretWall("SecretWall_1", new Vector3(150, floorY + 1, 0), new Vector2(3, 4));
 
         // -- Bouncers (Bolge 5) --
-        SpawnBouncer("Bouncer_1", new Vector3(170, floorY - 7, 0), 18f);
-        SpawnBouncer("Bouncer_2", new Vector3(176, floorY - 2, 0), 18f);
-        SpawnBouncer("Bouncer_3", new Vector3(182, floorY + 3, 0), 18f);
+        SpawnBouncer("Bouncer_1", new Vector3(169, floorY - 7, 0), 18f);
+        SpawnBouncer("Bouncer_2", new Vector3(174, floorY - 2, 0), 18f);
+        SpawnBouncer("Bouncer_3", new Vector3(179, floorY + 3, 0), 18f);
 
         // -- Checkpoint 2 --
         SpawnCheckpoint("Checkpoint_2", new Vector3(195, floorY + 2, 0));
@@ -214,8 +225,8 @@ public class RebuildIstanbul : EditorWindow
         SpawnCoin("Coin_" + coinIdx++, new Vector3(152, floorY + 2, 0));
 
         // Bolge 5 (Bouncer havadaki)
-        SpawnCoin("Coin_" + coinIdx++, new Vector3(170, floorY, 0));
-        SpawnCoin("Coin_" + coinIdx++, new Vector3(176, floorY + 5, 0));
+        SpawnCoin("Coin_" + coinIdx++, new Vector3(169, floorY, 0));
+        SpawnCoin("Coin_" + coinIdx++, new Vector3(174, floorY + 5, 0));
 
         // Bolge 6 (Kosu)
         SpawnCoin("Coin_" + coinIdx++, new Vector3(225, floorY + 2, 0));
@@ -232,14 +243,29 @@ public class RebuildIstanbul : EditorWindow
 
     static void SpawnSpike(string name, Vector3 pos, float width)
     {
-        var go = new GameObject(name);
-        go.transform.position = pos;
-        var sr = go.AddComponent<SpriteRenderer>();
-        sr.color = Color.red; // Dikeni temsil eder
-        var col = go.AddComponent<BoxCollider2D>();
-        col.size = new Vector2(width, 1f);
-        col.isTrigger = true;
-        go.AddComponent<SpikeKillZone>();
+        if (spikeTemplate != null)
+        {
+            // Orijinal spike genisligi genelde 1 birimdir. Biz yan yana (width) kadar uretelim.
+            for (int i = 0; i < width; i++)
+            {
+                var go = Object.Instantiate(spikeTemplate);
+                go.name = name + "_" + i;
+                go.transform.position = pos + new Vector3(i, 0, 0); // 1 birim arayla diz
+                go.SetActive(true);
+            }
+        }
+        else
+        {
+            // Eger Level 1'den kopyalanan spike bulunamazsa eski yontem (Kirmizi kutu)
+            var go = new GameObject(name);
+            go.transform.position = pos;
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.color = Color.red; 
+            var col = go.AddComponent<BoxCollider2D>();
+            col.size = new Vector2(width, 1f);
+            col.isTrigger = true;
+            go.AddComponent<SpikeKillZone>();
+        }
     }
 
     static void SpawnMovingPlatform(string name, Vector3 posA, Vector3 posB, float speed)
