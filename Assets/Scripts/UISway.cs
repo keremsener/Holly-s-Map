@@ -4,7 +4,7 @@ public class UISway : MonoBehaviour
 {
     [Header("Nefes Ayarları")]
     public float swayAmount = 15f; // Ekranda kaç piksel kayacağı (UI olduğu için sayılar büyük olmalı)
-    public float swaySpeed = 1f;   // Nefes alma hızı
+    public float swaySpeed = 1f;   // Nefes alma hızı 
 
     private RectTransform rectTransform;
     private Vector2 startPos;
