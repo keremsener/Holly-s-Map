@@ -69186,7 +69186,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 210bad2bcae1c02428920c2cec58e150, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bouncer
-  bounceForce: 45
+  bounceForce: 48
   bounceSound: {fileID: 0}
   bounceVFX: {fileID: 0}
 --- !u!212 &559493146
