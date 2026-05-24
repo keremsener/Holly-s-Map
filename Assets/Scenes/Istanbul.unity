@@ -823,7 +823,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &115567627
 CircleCollider2D:
@@ -21916,7 +21916,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &266693481
 CircleCollider2D:
@@ -22063,7 +22063,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &289446326
 CircleCollider2D:
@@ -22210,7 +22210,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &301546007
 CircleCollider2D:
@@ -23314,7 +23314,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &420765644
 CircleCollider2D:
@@ -23461,7 +23461,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &433471278
 CircleCollider2D:
@@ -24279,7 +24279,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &482581448
 CircleCollider2D:
@@ -24854,7 +24854,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &642170497
 CircleCollider2D:
@@ -35014,7 +35014,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &829594972
 CircleCollider2D:
@@ -35406,7 +35406,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &859934150
 CircleCollider2D:
@@ -35553,7 +35553,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &876936511
 CircleCollider2D:
@@ -36246,7 +36246,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &970762566
 CircleCollider2D:
@@ -37318,7 +37318,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &1152017352
 CircleCollider2D:
@@ -37465,7 +37465,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &1152900416
 CircleCollider2D:
@@ -38098,7 +38098,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &1172194087
 CircleCollider2D:
@@ -41515,7 +41515,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &1469366558
 CircleCollider2D:
@@ -42208,7 +42208,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &1506658492
 CircleCollider2D:
@@ -43011,7 +43011,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &1621964958
 CircleCollider2D:
@@ -43158,7 +43158,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &1623137077
 CircleCollider2D:
@@ -44206,7 +44206,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &1774557957
 CircleCollider2D:
@@ -45297,7 +45297,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &1899720854
 CircleCollider2D:
@@ -45855,7 +45855,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &1973924108
 CircleCollider2D:
@@ -46096,7 +46096,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &1976285410
 CircleCollider2D:
@@ -46911,7 +46911,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &2085031880
 CircleCollider2D:
@@ -47149,7 +47149,7 @@ MonoBehaviour:
   bobSpeed: 2.5
   spinSpeed: 180
   collectVFX: {fileID: 0}
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: dd9c373eafd802345946fa85d13a05c1, type: 3}
   shimmerInterval: 1.4
 --- !u!58 &2107748363
 CircleCollider2D:
